@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import api from '../lib/axios';
 import Link from 'next/link';
 import PublicHeader from './components/PublicHeader';
+import { useRouter } from 'next/navigation';
 
 // --- Definisi Tipe Data ---
 interface Product {
   id: number;
   name: string;
   price: string | number;
+  image_path?: string;
   category?: { name: string; };
 }
 
@@ -45,6 +47,8 @@ interface Banner {
 }
 
 export default function Home() {
+  const router = useRouter();
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -53,35 +57,76 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
 
-  useEffect(() => {
-    const fetchPublicData = async () => {
-      try {
-        // Gunakan Promise.allSettled agar satu endpoint gagal tidak memblokir yang lain
-        const [prodRes, galRes, artRes, testRes, bannerRes] = await Promise.allSettled([
-          api.get('/products'),
-          api.get('/galleries'),
-          api.get('/articles'),
-          api.get('/testimonials'),
-          api.get('/banners'),
-        ]);
+  // --- State untuk Modal Varian (Shopee-style) ---
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [variant, setVariant] = useState({ size: 'M', color: 'Hitam', qty: 1 });
 
-        if (prodRes.status === 'fulfilled') setProducts(prodRes.value.data.data ?? []);
-        if (galRes.status === 'fulfilled') setGalleries(galRes.value.data.data ?? []);
-        if (artRes.status === 'fulfilled') setArticles(artRes.value.data.data ?? []);
-        if (testRes.status === 'fulfilled') {
-          const featured = (testRes.value.data.data ?? []).filter((t: Testimonial) => t.is_featured);
-          setTestimonials(featured);
-        }
-        if (bannerRes.status === 'fulfilled') {
-          const active = (bannerRes.value.data.data ?? []).filter((b: Banner) => b.is_active);
-          setBanners(active);
-        }
-      } catch (error) {
-        console.error('Gagal mengambil data publik:', error);
-      } finally {
-        setLoading(false);
+  // Fungsi buka popup
+  const openModal = (product: Product) => {
+    setSelectedProduct(product);
+    setVariant({ size: 'M', color: 'Hitam', qty: 1 }); // Default pilihan
+  };
+
+  // Fungsi Masukkan Keranjang / Beli Sekarang
+  const handleBuy = (isDirectBuy: boolean) => {
+    if (!selectedProduct) return;
+    
+    try {
+      const existingCart = JSON.parse(localStorage.getItem('herclo_cart') || '[]');
+      
+      const existingItemIndex = existingCart.findIndex((item: any) => 
+        item.product.id === selectedProduct.id && 
+        item.size === variant.size && 
+        item.color === variant.color
+      );
+
+      if (existingItemIndex >= 0) {
+        existingCart[existingItemIndex].quantity += variant.qty;
+      } else {
+        existingCart.push({
+          id: Date.now() + Math.random(),
+          product: selectedProduct,
+          quantity: variant.qty,
+          size: variant.size,
+          color: variant.color
+        });
       }
-    };
+
+      localStorage.setItem('herclo_cart', JSON.stringify(existingCart));
+      setSelectedProduct(null);
+      
+      if (isDirectBuy) {
+        router.push('/checkout');
+      } else {
+        alert('Berhasil dimasukkan ke keranjang!');
+      }
+    } catch (error) {
+      alert('Gagal menyimpan keranjang ke browser.');
+    }
+  };
+
+  const fetchPublicData = async () => {
+    try {
+      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes] = await Promise.all([
+        api.get('/products'),
+        api.get('/galleries'),
+        api.get('/articles'),
+        api.get('/testimonials'),
+        api.get('/banners'),
+      ]);
+      setProducts(productsRes.data?.data || productsRes.data || []);
+      setGalleries(galleriesRes.data?.data || galleriesRes.data || []);
+      setArticles(articlesRes.data?.data || articlesRes.data || []);
+      setTestimonials(testimonialsRes.data?.data || testimonialsRes.data || []);
+      setBanners(bannersRes.data?.data || bannersRes.data || []);
+    } catch (error) {
+      console.error('Gagal memuat data publik:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPublicData();
   }, []);
 
@@ -109,6 +154,84 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50 font-sans text-gray-900">
       {/* SHARED HEADER */}
       <PublicHeader />
+
+      {/* --- POPUP MODAL VARIAN --- */}
+      {selectedProduct && (
+        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end md:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-t-2xl md:rounded-2xl p-6 animate-slide-up relative">
+            <div className="flex justify-between items-start mb-6 border-b pb-4">
+              <div className="flex gap-4">
+                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border">
+                   {selectedProduct.image_path ? (
+                     <img src={`http://127.0.0.1:8000${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                   ) : (
+                     <span className="text-xs text-gray-400">Produk</span>
+                   )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight mb-1 pr-6">{selectedProduct.name}</h3>
+                  <p className="text-xl font-bold text-red-600">Rp {new Intl.NumberFormat('id-ID').format(Number(selectedProduct.price))}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 font-bold text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold mb-2">Ukuran</label>
+                <div className="flex gap-2 flex-wrap">
+                  {['S', 'M', 'L', 'XL'].map(s => (
+                    <button 
+                      key={s} 
+                      onClick={() => setVariant({...variant, size: s})} 
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.size === s ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2">Warna</label>
+                <div className="flex gap-2 flex-wrap">
+                  {['Hitam', 'Putih', 'Navy'].map(c => (
+                    <button 
+                      key={c} 
+                      onClick={() => setVariant({...variant, color: c})} 
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.color === c ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-between items-center py-4 border-y border-gray-100 mt-2">
+                <span className="font-semibold text-sm">Jumlah</span>
+                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                  <button onClick={() => setVariant({...variant, qty: Math.max(1, variant.qty - 1)})} className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-lg leading-none">-</button>
+                  <span className="px-4 text-sm font-medium border-x border-gray-300 py-1">{variant.qty}</span>
+                  <button onClick={() => setVariant({...variant, qty: variant.qty + 1})} className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-lg leading-none">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button 
+                onClick={() => handleBuy(false)} 
+                className="flex-1 bg-white text-black py-3 rounded-lg font-bold border-2 border-black hover:bg-gray-50 transition-colors"
+              >
+                + Keranjang
+              </button>
+              <button 
+                onClick={() => handleBuy(true)} 
+                className="flex-1 bg-black text-white py-3 rounded-lg font-bold border-2 border-black hover:bg-gray-800 transition-colors"
+              >
+                Beli Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* HERO BANNER */}
       {banners.length > 0 ? (
@@ -212,10 +335,14 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.map((product) => (
                 <div key={product.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                  <div className="h-64 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
-                    <svg className="w-14 h-14 text-gray-300 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+                  <div className="h-64 bg-gray-100 flex items-center justify-center relative overflow-hidden">
+                    {product.image_path ? (
+                      <img src={`http://127.0.0.1:8000${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <svg className="w-14 h-14 text-gray-300 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                   </div>
                   <div className="p-5">
@@ -226,8 +353,11 @@ export default function Home() {
                     <p className="font-black text-lg text-black mb-4">
                       Rp {new Intl.NumberFormat('id-ID').format(Number(product.price))}
                     </p>
-                    <button className="w-full bg-black text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-800 active:scale-95 transition-all">
-                      + Tambah Keranjang
+                    <button
+                      onClick={() => openModal(product)}
+                      className="w-full bg-black text-white py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    >
+                      Beli / + Keranjang
                     </button>
                   </div>
                 </div>
@@ -235,6 +365,7 @@ export default function Home() {
             </div>
           )}
         </section>
+        
 
         {/* LOOKBOOK GALERI PREVIEW */}
         {galleries.length > 0 && (
@@ -298,9 +429,9 @@ export default function Home() {
                       {article.title}
                     </h3>
                     <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed mb-4">{article.content}</p>
-                    <span className="text-xs font-bold text-black border-b border-black pb-0.5 hover:border-gray-400 hover:text-gray-400 transition-colors cursor-pointer">
+                    <Link href={`/articles/${article.slug}`} className="text-xs font-bold text-black border-b border-black pb-0.5 hover:border-gray-400 hover:text-gray-400 transition-colors">
                       Baca Selengkapnya →
-                    </span>
+                    </Link>
                   </div>
                 </div>
               ))}
@@ -395,11 +526,14 @@ export default function Home() {
       <footer className="bg-white border-t border-gray-100 py-12 text-center">
         <Link href="/" className="text-2xl font-black tracking-tight text-gray-900">HERCLO.</Link>
         <p className="text-gray-400 text-sm mt-2 mb-6">Dailywear · Sportwear · Muslimwear</p>
-        <div className="flex justify-center gap-6 text-sm font-semibold text-gray-500 mb-6">
+        <div className="flex justify-center gap-6 text-sm font-semibold text-gray-500 mb-6 flex-wrap items-center">
           <Link href="/gallery" className="hover:text-black transition-colors">Lookbook</Link>
           <Link href="/articles" className="hover:text-black transition-colors">Blog</Link>
           <Link href="/testimonials" className="hover:text-black transition-colors">Testimoni</Link>
-          <Link href="/login" className="hover:text-black transition-colors">Login</Link>
+          <Link href="/cart" className="font-medium text-sm hover:text-gray-600">🛒 Keranjang</Link>
+          <Link href="/login" className="px-6 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors">
+            Login
+          </Link>
         </div>
         <p className="text-gray-300 text-xs">&copy; {new Date().getFullYear()} HERCLO Official. All rights reserved.</p>
       </footer>

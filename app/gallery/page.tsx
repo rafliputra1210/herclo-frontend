@@ -81,10 +81,10 @@ export default function PublicGallery() {
                 key={img.id}
                 className="break-inside-avoid relative rounded-2xl overflow-hidden group shadow-sm border border-gray-100 bg-gray-100 mb-4"
               >
-                <img
-                  src={img.image_path.startsWith('http') ? img.image_path : `http://127.0.0.1:8000${img.image_path}`}
-                  alt={img.title}
-                  className="w-full h-auto block object-cover transition-transform duration-700 group-hover:scale-105"
+                <img 
+                  src={`http://127.0.0.1:8000${img.image_path}`} 
+                  alt={img.title} 
+                  className="object-cover w-full h-full"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
                   {img.category && (
