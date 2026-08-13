@@ -1,208 +1,241 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import api from '../../lib/axios';
+import api from '../../lib/axios'; // Pastikan path ini sesuai dengan struktur folder kamu
 import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
-  
-  // Tambahan State untuk Nama Penerima
+
+  // State untuk Data Akun Otomatis
+  const [email, setEmail] = useState('');
+  const [dashboardCode, setDashboardCode] = useState('');
+
+  // State untuk Data Pengiriman
   const [recipientName, setRecipientName] = useState('');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('Transfer Bank');
-  
+  const [paymentMethod, setPaymentMethod] = useState('Otomatis via Midtrans');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<any>(null);
   const router = useRouter();
 
+  // 1. Suntikkan Script Midtrans Snap
   useEffect(() => {
-    const localCart = JSON.parse(localStorage.getItem('herclo_cart') || '[]');
-    if (localCart.length === 0) {
-      router.push('/cart');
+    const snapScript = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    // PENTING: Ganti dengan Client Key Sandbox Midtrans milikmu
+    const clientKey = 'Mid-client-nKHReRtdDSAr5DCl';
+
+    const script = document.createElement('script');
+    script.src = snapScript;
+    script.setAttribute('data-client-key', clientKey);
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // 2. Baca Data Keranjang dari LocalStorage
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem('herclo_cart') || '[]');
+    if (savedCart.length === 0) {
+      alert('Keranjang Anda kosong! Silakan pilih produk terlebih dahulu.');
+      router.push('/');
     } else {
-      setCartItems(localCart);
+      setCartItems(savedCart);
     }
   }, [router]);
 
+  // Hitung Total Belanja
   const totalAmount = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
 
+  // 3. Proses Checkout & Pemanggilan Midtrans
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Gabungkan Nama dan Alamat agar rapi masuk ke satu kolom database
+
+    // Gabungkan nama dan alamat untuk disimpan di database
     const fullShippingAddress = `${recipientName} | ${address}`;
 
     try {
-      const response = await api.post('/checkout', { 
+      // Tembak API Checkout di Laravel (termasuk email & kode dashboard)
+      const response = await api.post('/checkout', {
+        email: email,
+        dashboard_code: dashboardCode,
         shipping_address: fullShippingAddress,
         payment_method: paymentMethod,
-        items: cartItems.map(item => ({
-          product_id: item.product.id,
-          quantity: item.quantity,
-          size: item.size || '-',
-          color: item.color || '-'
-        }))
+        items: cartItems
       });
-      
-      // Kosongkan keranjang di browser setelah sukses
-      localStorage.removeItem('herclo_cart');
-      
-      // Tampilkan Struk dengan Nama Pembeli
-      setReceipt({
-        order_id: response.data.order_id,
-        name: recipientName,
-        date: new Date().toLocaleString('id-ID'),
-        items: cartItems,
-        total: totalAmount,
-        method: paymentMethod
-      });
+
+      const snapToken = response.data.snap_token;
+
+      // Panggil Popup Midtrans jika Token berhasil didapat
+      if (snapToken) {
+        // @ts-ignore
+        window.snap.pay(snapToken, {
+          onSuccess: function (result: any) {
+            // Simpan data struk sementara untuk halaman /receipt
+            localStorage.setItem('herclo_receipt', JSON.stringify({
+              orderId: result.order_id,
+              email: email,
+              dashboardCode: dashboardCode,
+              total: totalAmount
+            }));
+            localStorage.removeItem('herclo_cart'); // Kosongkan keranjang
+            router.push('/receipt'); // Lempar ke halaman sukses
+          },
+          onPending: function (result: any) {
+            alert('Menunggu pembayaran diselesaikan...');
+            // Tetap simpan struk dan lempar ke /receipt agar pelanggan tahu kode aksesnya
+            localStorage.setItem('herclo_receipt', JSON.stringify({
+              orderId: result.order_id,
+              email: email,
+              dashboardCode: dashboardCode,
+              total: totalAmount
+            }));
+            localStorage.removeItem('herclo_cart');
+            router.push('/receipt');
+          },
+          onError: function (result: any) {
+            alert('Pembayaran gagal! Silakan coba lagi.');
+          },
+          onClose: function () {
+            alert('Anda menutup popup sebelum menyelesaikan pembayaran.');
+          }
+        });
+      }
+
     } catch (error: any) {
-      alert('Gagal: ' + (error.response?.data?.message || 'Terjadi kesalahan.'));
+      alert('Gagal: ' + (error.response?.data?.message || 'Terjadi kesalahan saat memproses pesanan.'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // --- TAMPILAN STRUK PEMBELIAN ---
-  if (receipt) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 font-sans">
-        <div className="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full border-t-8 border-black relative overflow-hidden">
-          {/* Efek gerigi struk di atas dan bawah */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCI+PHBvbHlnb24gcG9pbnRzPSIwLDAgNSwxMCAxMCwwIiBmaWxsPSIjZjNmMTRiIi8+PC9zdmc+')] opacity-20"></div>
-          
-          <div className="text-center mb-6 mt-2">
-            <h2 className="text-2xl font-black tracking-widest">HERCLO.</h2>
-            <p className="text-gray-500 text-sm mt-1">Struk Pembelian</p>
-            <p className="text-xs text-gray-400 mt-1">Order ID: #{receipt.order_id}</p>
-            <p className="text-xs text-gray-400">{receipt.date}</p>
-          </div>
-          
-          <div className="bg-gray-50 p-3 rounded-lg mb-4 text-center">
-             <p className="text-xs text-gray-500 mb-1">Pembeli / Penerima:</p>
-             <p className="font-bold text-gray-800">{receipt.name}</p>
-          </div>
+  // Validasi tombol bayar (semua wajib diisi)
+  const isFormValid = email && dashboardCode.length >= 4 && recipientName && address && cartItems.length > 0;
 
-          <div className="border-y border-dashed border-gray-300 py-4 mb-4 space-y-3">
-            {receipt.items.map((item: any, idx: number) => (
-              <div key={idx} className="flex justify-between text-sm">
-                <div>
-                  <p className="font-semibold text-gray-800">{item.product.name}</p>
-                  <p className="text-xs text-gray-500">{item.size} | {item.color} | x{item.quantity}</p>
-                </div>
-                <p className="font-medium text-gray-800">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="flex justify-between font-bold text-lg mb-2 text-gray-900">
-            <span>Total Bayar</span>
-            <span>Rp {new Intl.NumberFormat('id-ID').format(receipt.total)}</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-600 mb-8">
-            <span>Metode</span>
-            <span className="font-medium uppercase">{receipt.method}</span>
-          </div>
-          
-          <button onClick={() => router.push('/')} className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors">
-            Kembali ke Beranda
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // --- TAMPILAN HALAMAN CHECKOUT ---
   return (
-    <main className="min-h-screen bg-gray-50 py-10 font-sans text-gray-900">
+    <main className="min-h-screen bg-gray-50 py-10 font-sans text-gray-900 selection:bg-emerald-500 selection:text-white">
       <div className="max-w-5xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8">Checkout Pesanan</h1>
-        
+        <h1 className="text-3xl font-black tracking-tight mb-8">Checkout Pesanan</h1>
+
         <form onSubmit={handleCheckout} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* KOLOM KIRI: FORM INPUT */}
+
+          {/* BAGIAN FORMULIR PENGISIAN */}
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="font-bold text-lg mb-4">1. Informasi Pengiriman</h3>
-              
+
+            {/* Form Akun Otomatis */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+              <h3 className="font-bold text-lg mb-1">1. Informasi Akun</h3>
+              <p className="text-xs text-gray-500 mb-5">Kami akan membuatkan akses otomatis untuk melacak pesanan Anda.</p>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Nama Penerima</label>
-                  <input 
-                    type="text" 
-                    required 
-                    value={recipientName} 
-                    onChange={(e) => setRecipientName(e.target.value)}
-                    placeholder="Contoh: Rafli Putra"
-                    className="w-full border border-gray-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-black focus:border-black transition-all"
+                  <label className="block text-sm font-semibold mb-1">Email Aktif</label>
+                  <input
+                    type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com (Untuk mengirim struk)"
+                    className="w-full border border-gray-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-black transition-shadow"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700">Alamat Lengkap</label>
-                  <textarea 
-                    required 
-                    rows={3} 
-                    value={address} 
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Nama Jalan, RT/RW, Kecamatan, Kota, Kode Pos..."
-                    className="w-full border border-gray-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-black focus:border-black transition-all"
+                  <label className="block text-sm font-semibold mb-1">Buat Kode Dashboard</label>
+                  <input
+                    type="text" required minLength={4} value={dashboardCode} onChange={(e) => setDashboardCode(e.target.value)}
+                    placeholder="Minimal 4 Karakter (Contoh: HERCLO123)"
+                    className="w-full border border-emerald-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50/50 transition-shadow font-medium"
+                  />
+                  <p className="text-xs text-emerald-600 mt-1.5 font-medium">
+                    * Simpan kode ini. Digunakan sebagai password untuk melacak resi pengiriman.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Alamat Pengiriman */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-black"></div>
+              <h3 className="font-bold text-lg mb-5">2. Alamat Pengiriman</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Nama Lengkap Penerima</label>
+                  <input
+                    type="text" required value={recipientName} onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Sesuai KTP / Nama Panggilan"
+                    className="w-full border border-gray-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-black transition-shadow"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Alamat Lengkap Tujuan</label>
+                  <textarea
+                    required rows={3} value={address} onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Nama Jalan, RT/RW, Patokan Rumah, Kecamatan, Kota, Kode Pos..."
+                    className="w-full border border-gray-300 p-3 rounded-lg outline-none focus:ring-2 focus:ring-black transition-shadow resize-none"
                   ></textarea>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="font-bold text-lg mb-4">2. Metode Pembayaran</h3>
-              <div className="space-y-3">
-                {['Transfer Bank', 'COD (Bayar di Tempat)', 'E-Wallet (OVO/Dana)'].map(method => (
-                  <label 
-                    key={method} 
-                    className={`flex items-center p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-                      paymentMethod === method ? 'border-black bg-gray-50 shadow-inner' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <input 
-                      type="radio" 
-                      name="payment" 
-                      value={method} 
-                      checked={paymentMethod === method} 
-                      onChange={(e) => setPaymentMethod(e.target.value)} 
-                      className="mr-3 w-4 h-4 text-black focus:ring-black" 
-                    />
-                    <span className="font-medium text-sm text-gray-800">{method}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+
           </div>
 
-          {/* KOLOM KANAN: RINGKASAN */}
+          {/* BAGIAN RINGKASAN PESANAN (SIDEBAR KANAN) */}
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-fit sticky top-24">
             <h3 className="font-bold text-lg mb-4">Ringkasan Pesanan</h3>
-            <div className="space-y-4 mb-6 border-b border-gray-100 pb-6">
+
+            <div className="space-y-4 mb-6 border-b border-gray-100 pb-6 max-h-64 overflow-y-auto pr-2">
               {cartItems.map(item => (
-                <div key={item.id} className="flex justify-between text-sm">
-                  <div>
-                    <p className="font-semibold text-gray-800">{item.product.name}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Varian: {item.size} - {item.color} (x{item.quantity})</p>
+                <div key={item.id} className="flex gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-md border flex items-center justify-center shrink-0 overflow-hidden">
+                    {item.product.image_path ? (
+                      <img src={`http://127.0.0.1:8000${item.product.image_path}`} alt={item.product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[10px] text-gray-400">Produk</span>
+                    )}
                   </div>
-                  <span className="font-medium text-gray-900">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</span>
+                  <div className="flex-1">
+                    <p className="font-bold text-sm leading-tight text-gray-900">{item.product.name}</p>
+                    <p className="text-xs text-gray-500 mt-1">Varian: {item.size} - {item.color}</p>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="text-xs font-semibold text-gray-600">Qty: {item.quantity}</span>
+                      <span className="font-bold text-sm text-black">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between font-black text-xl mb-6 text-gray-900">
+
+            <div className="space-y-3 mb-6 border-b border-gray-100 pb-6 text-sm">
+              <div className="flex justify-between text-gray-500">
+                <span>Subtotal Produk</span>
+                <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>Biaya Layanan Midtrans</span>
+                <span className="text-emerald-500 font-semibold">Gratis</span>
+              </div>
+            </div>
+
+            <div className="flex justify-between font-black text-2xl mb-8 text-gray-900">
               <span>Total Tagihan</span>
               <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
             </div>
-            <button 
-              type="submit" 
-              disabled={isSubmitting || !address || !recipientName} 
-              className="w-full bg-black text-white py-3.5 rounded-lg font-bold hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-md"
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormValid}
+              className="w-full bg-black text-white py-4 rounded-xl font-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-lg"
             >
-              {isSubmitting ? 'Memproses Pesanan...' : 'Buat Pesanan Sekarang'}
+              {isSubmitting ? 'Memproses Pesanan...' : (
+                <>Bayar dengan <span className="bg-white text-black px-2.5 py-0.5 rounded text-sm font-black ml-1">Midtrans</span></>
+              )}
             </button>
+            <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+              🔒 Pembayaran aman & terenkripsi
+            </p>
           </div>
 
         </form>

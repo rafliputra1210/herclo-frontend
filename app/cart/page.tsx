@@ -51,7 +51,7 @@ export default function CartPage() {
         {cartItems.length === 0 ? (
           <div className="bg-white p-10 text-center rounded-xl border border-gray-200 shadow-sm">
             <p className="text-gray-500 mb-4">Keranjang Anda masih kosong.</p>
-            <Link href="/" className="inline-block bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800">
+            <Link href="/" className="inline-block bg-lime-400 text-black px-6 py-2 rounded-lg font-bold hover:bg-lime-500 shadow-sm transition-colors">
               Mulai Belanja
             </Link>
           </div>
@@ -87,7 +87,7 @@ export default function CartPage() {
                 <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
               </div>
               <Link href="/checkout">
-                <button className="w-full bg-black text-white py-3 rounded-lg font-bold mt-6 hover:bg-gray-800">
+                <button className="w-full bg-lime-400 text-black py-3 rounded-lg font-bold mt-6 hover:bg-lime-500 shadow-sm transition-colors">
                   Lanjut ke Pembayaran
                 </button>
               </Link>

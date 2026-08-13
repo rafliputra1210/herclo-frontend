@@ -56,6 +56,9 @@ export default function Home() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
+  
+  // --- State untuk Fitur Video Opening Dinamis ---
+  const [useVideoOpening, setUseVideoOpening] = useState(false);
 
   // --- State untuk Modal Varian (Shopee-style) ---
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -67,7 +70,7 @@ export default function Home() {
     setVariant({ size: 'M', color: 'Hitam', qty: 1 }); // Default pilihan
   };
 
-  // Fungsi Masukkan Keranjang / Beli Sekarang
+  // Fungsi Masukkan Keranjang / Beli Sekarang (Mode Guest / LocalStorage)
   const handleBuy = (isDirectBuy: boolean) => {
     if (!selectedProduct) return;
     
@@ -107,18 +110,26 @@ export default function Home() {
 
   const fetchPublicData = async () => {
     try {
-      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes] = await Promise.all([
+      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes, settingsRes] = await Promise.all([
         api.get('/products'),
         api.get('/galleries'),
         api.get('/articles'),
         api.get('/testimonials'),
         api.get('/banners'),
+        api.get('/settings').catch(() => ({ data: { data: {} } })), // Mencegah error jika tabel settings belum dimigrasi
       ]);
       setProducts(productsRes.data?.data || productsRes.data || []);
       setGalleries(galleriesRes.data?.data || galleriesRes.data || []);
       setArticles(articlesRes.data?.data || articlesRes.data || []);
       setTestimonials(testimonialsRes.data?.data || testimonialsRes.data || []);
       setBanners(bannersRes.data?.data || bannersRes.data || []);
+      
+      // Menerapkan pengaturan video opening dari database Backend
+      if (settingsRes?.data?.data?.use_video_opening === 'true') {
+        setUseVideoOpening(true);
+      } else {
+        setUseVideoOpening(false);
+      }
     } catch (error) {
       console.error('Gagal memuat data publik:', error);
     } finally {
@@ -145,7 +156,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans gap-4">
         <div className="text-3xl font-black tracking-tight text-gray-900">HERCLO.</div>
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-lime-500 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -161,11 +172,11 @@ export default function Home() {
           <div className="bg-white w-full max-w-md rounded-t-2xl md:rounded-2xl p-6 animate-slide-up relative">
             <div className="flex justify-between items-start mb-6 border-b pb-4">
               <div className="flex gap-4">
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border">
+                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border shrink-0">
                    {selectedProduct.image_path ? (
                      <img src={`http://127.0.0.1:8000${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
                    ) : (
-                     <span className="text-xs text-gray-400">Produk</span>
+                     <span className="text-[10px] text-gray-400">No Image</span>
                    )}
                 </div>
                 <div>
@@ -184,7 +195,7 @@ export default function Home() {
                     <button 
                       key={s} 
                       onClick={() => setVariant({...variant, size: s})} 
-                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.size === s ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.size === s ? 'border-lime-500 text-black bg-lime-400' : 'border-gray-300 text-gray-600'}`}
                     >
                       {s}
                     </button>
@@ -198,7 +209,7 @@ export default function Home() {
                     <button 
                       key={c} 
                       onClick={() => setVariant({...variant, color: c})} 
-                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.color === c ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.color === c ? 'border-lime-500 text-black bg-lime-400' : 'border-gray-300 text-gray-600'}`}
                     >
                       {c}
                     </button>
@@ -218,7 +229,7 @@ export default function Home() {
             <div className="flex gap-3 mt-6">
               <button 
                 onClick={() => handleBuy(false)} 
-                className="flex-1 bg-white text-black py-3 rounded-lg font-bold border-2 border-black hover:bg-gray-50 transition-colors"
+                className="flex-1 bg-lime-400 text-black py-3 rounded-lg font-bold border-2 border-lime-400 hover:bg-lime-500 transition-colors"
               >
                 + Keranjang
               </button>
@@ -233,80 +244,124 @@ export default function Home() {
         </div>
       )}
 
-      {/* HERO BANNER */}
-      {banners.length > 0 ? (
-        <section className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden bg-gray-900">
-          {banners.map((banner, index) => (
-            <div
-              key={banner.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
-              <img
-                src={`http://127.0.0.1:8000${banner.image_path}`}
-                alt={banner.title || 'HERCLO Banner'}
-                className="object-cover w-full h-full"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-white text-center p-6">
-                {banner.title && (
-                  <h2 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-xl tracking-tight">
-                    {banner.title}
-                  </h2>
-                )}
-                {banner.link_url && (
-                  <a
-                    href={banner.link_url}
-                    className="mt-6 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-100 transition-colors shadow-xl text-sm"
-                  >
-                    Cek Sekarang →
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-          {banners.length > 1 && (
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
-              {banners.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentBanner(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === currentBanner ? 'w-8 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
-                  }`}
-                  aria-label={`Slide ${idx + 1}`}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      ) : (
-        <section className="bg-gray-900 text-white h-[60vh] md:h-[85vh] flex flex-col items-center justify-center text-center px-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-            Dailywear · Sportwear · Muslimwear
-          </span>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-none">
-            Elevate Your Style.
-          </h1>
-          <p className="text-gray-300 md:text-lg max-w-xl mb-10 leading-relaxed">
-            Temukan koleksi premium HERCLO — dibuat untuk tampil percaya diri setiap hari.
-          </p>
-          <div className="flex gap-4 flex-wrap justify-center">
-            <a
-              href="#koleksi"
-              className="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 transition-colors text-sm"
-            >
-              Belanja Sekarang
+      {/* --- HERO SECTION DINAMIS (VIDEO ATAU BANNER) --- */}
+      {useVideoOpening ? (
+        
+        /* OPSI 1: VIDEO OPENING */
+        <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
+          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
+            <source src="/herclo-opening.mp4" type="video/mp4" />
+          </video>
+          <div className="relative z-10 text-center text-white px-6">
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-4 animate-fade-in-up">HERCLO.</h1>
+            <p className="text-sm md:text-lg font-semibold tracking-[0.3em] uppercase text-gray-300 mb-10">Elevate Your Everyday Style</p>
+            <a href="#koleksi" className="inline-block border-2 border-lime-400 text-lime-400 px-10 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-lime-400 hover:text-black hover:border-lime-400 transition-all">
+              Eksplorasi Koleksi
             </a>
-            <Link
-              href="/gallery"
-              className="px-8 py-3 border border-white text-white font-bold rounded-full hover:bg-white/10 transition-colors text-sm"
-            >
-              Lihat Lookbook
-            </Link>
+          </div>
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-70">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
           </div>
         </section>
+
+      ) : (
+
+        /* OPSI 2: BANNER SLIDER PROMOSI */
+        banners.length > 0 ? (
+          <section className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden bg-gray-900">
+            {banners.map((banner, index) => (
+              <div
+                key={banner.id}
+                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                  index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
+              >
+                <img
+                  src={`http://127.0.0.1:8000${banner.image_path}`}
+                  alt={banner.title || 'HERCLO Banner'}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-white text-center p-6">
+                  {banner.title && (
+                    <h2 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-xl tracking-tight">
+                      {banner.title}
+                    </h2>
+                  )}
+                  {banner.link_url && (
+                    <a
+                      href={banner.link_url}
+                      className="mt-6 px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors shadow-xl text-sm"
+                    >
+                      Cek Sekarang →
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+            {banners.length > 1 && (
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
+                {banners.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentBanner(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      idx === currentBanner ? 'w-8 bg-lime-400' : 'w-2 bg-white/50 hover:bg-lime-400/80'
+                    }`}
+                    aria-label={`Slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
+          <section className="bg-gray-900 text-white h-[60vh] md:h-[85vh] flex flex-col items-center justify-center text-center px-8">
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+              Dailywear · Sportwear · Muslimwear
+            </span>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-none">
+              Elevate Your Style.
+            </h1>
+            <p className="text-gray-300 md:text-lg max-w-xl mb-10 leading-relaxed">
+              Temukan koleksi premium HERCLO — dibuat untuk tampil percaya diri setiap hari.
+            </p>
+            <div className="flex gap-4 flex-wrap justify-center">
+              <a href="#koleksi" className="px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors text-sm shadow-lg">Belanja Sekarang</a>
+              <Link href="/gallery" className="px-8 py-3 border border-white text-white font-bold rounded-full hover:border-lime-400 hover:text-lime-400 transition-colors text-sm">Lihat Lookbook</Link>
+            </div>
+          </section>
+        )
       )}
+
+
+      {/* --- TENTANG HERCLO (BRAND STORYTELLING) --- */}
+      <section className="bg-white py-20 md:py-32">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
+          <div className="flex-1 space-y-6">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-12 h-[2px] bg-black"></div>
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Tentang Brand</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black leading-tight text-gray-900">
+              Mendefinisikan Ulang <br/> Kepercayaan Diri.
+            </h2>
+            <p className="text-gray-600 leading-relaxed text-lg">
+              HERCLO bukan sekadar merek pakaian. Kami adalah manifestasi dari gaya hidup modern yang memadukan kenyamanan absolut dengan desain estetik yang tak lekang oleh waktu.
+            </p>
+            <p className="text-gray-500 leading-relaxed">
+              Diciptakan dengan ketelitian tingkat tinggi, setiap potongan kain dipilih untuk memastikan Anda tampil maksimal—baik untuk aktivitas harian, olahraga, maupun gaya santun.
+            </p>
+          </div>
+          
+          <div className="flex-1 relative">
+            <div className="aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden relative z-10 border border-gray-200 shadow-xl">
+              <img src="https://images.unsplash.com/photo-1550614000-4b95f19069d3?q=80&w=800&auto=format&fit=crop" alt="HERCLO Studio" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+            </div>
+            <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-gray-900 rounded-2xl z-0 hidden md:block"></div>
+          </div>
+        </div>
+      </section>
 
       {/* CONTENT SECTIONS */}
       <div className="max-w-7xl mx-auto px-6 py-20 space-y-28">
@@ -321,7 +376,7 @@ export default function Home() {
             </div>
             <Link
               href="/gallery"
-              className="text-sm font-semibold text-black hover:underline underline-offset-4 shrink-0"
+              className="text-sm font-semibold text-lime-600 hover:text-lime-500 hover:underline underline-offset-4 shrink-0"
             >
               Lihat Semua →
             </Link>
@@ -355,7 +410,7 @@ export default function Home() {
                     </p>
                     <button
                       onClick={() => openModal(product)}
-                      className="w-full bg-black text-white py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                      className="w-full bg-lime-400 text-black py-2.5 rounded-lg font-medium hover:bg-lime-500 transition-colors shadow-sm"
                     >
                       Beli / + Keranjang
                     </button>
@@ -372,11 +427,11 @@ export default function Home() {
           <section id="galeri">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
               <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-emerald-600">Lookbook</span>
+                <span className="text-xs font-bold uppercase tracking-widest text-lime-500">Lookbook</span>
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight mt-1">Galeri Inspirasi</h2>
                 <p className="text-gray-500 mt-2">OOTD pilihan dari koleksi terkini HERCLO.</p>
               </div>
-              <Link href="/gallery" className="text-sm font-semibold text-black hover:underline underline-offset-4 shrink-0">
+              <Link href="/gallery" className="text-sm font-semibold text-lime-600 hover:text-lime-500 hover:underline underline-offset-4 shrink-0">
                 Lihat Semua Galeri →
               </Link>
             </div>
@@ -409,7 +464,7 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight mt-1">Blog Fashion</h2>
                 <p className="text-gray-500 mt-2">Tips styling, tren terkini, dan cerita di balik koleksi.</p>
               </div>
-              <Link href="/articles" className="text-sm font-semibold text-black hover:underline underline-offset-4 shrink-0">
+              <Link href="/articles" className="text-sm font-semibold text-lime-600 hover:text-lime-500 hover:underline underline-offset-4 shrink-0">
                 Baca Semua Artikel →
               </Link>
             </div>
@@ -471,7 +526,7 @@ export default function Home() {
                         </div>
                         <div>
                           <p className="font-bold text-sm">{testi.customer_name}</p>
-                          <p className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">✓ Verified Buyer</p>
+                          <p className="text-[10px] text-lime-400 uppercase tracking-wider font-semibold">✓ Verified Buyer</p>
                         </div>
                       </div>
                     </div>
@@ -480,7 +535,7 @@ export default function Home() {
                 <div className="text-center">
                   <Link
                     href="/testimonials"
-                    className="inline-block border border-white/40 text-white px-8 py-3 rounded-full hover:bg-white hover:text-black transition-all font-semibold text-sm"
+                    className="inline-block border border-lime-400 text-lime-400 px-8 py-3 rounded-full hover:bg-lime-400 hover:text-black transition-all font-semibold text-sm"
                   >
                     Lihat Semua Ulasan →
                   </Link>
@@ -498,22 +553,22 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { href: '/gallery', label: 'Lookbook & Galeri', sub: 'Inspirasi OOTD terkini', color: 'from-emerald-500 to-teal-600', badge: 'Lookbook' },
-              { href: '/articles', label: 'Blog Fashion', sub: 'Tips styling & tren terbaru', color: 'from-amber-500 to-orange-600', badge: 'Journal' },
-              { href: '/testimonials', label: 'Testimoni Pelanggan', sub: 'Ulasan jujur dari pembeli', color: 'from-sky-500 to-blue-600', badge: 'Reviews' },
+              { href: '/gallery', label: 'Lookbook & Galeri', sub: 'Inspirasi OOTD terkini', color: 'from-lime-400 to-lime-600 text-black', badge: 'Lookbook', badgeColor: 'bg-black/20 text-black' },
+              { href: '/articles', label: 'Blog Fashion', sub: 'Tips styling & tren terbaru', color: 'from-gray-800 to-black text-white', badge: 'Journal', badgeColor: 'bg-lime-400/20 text-lime-400' },
+              { href: '/testimonials', label: 'Testimoni Pelanggan', sub: 'Ulasan jujur dari pembeli', color: 'from-gray-100 to-gray-200 text-gray-900', badge: 'Reviews', badgeColor: 'bg-lime-400/30 text-lime-700' },
             ].map((card) => (
               <Link
                 key={card.href}
                 href={card.href}
-                className={`group relative bg-gradient-to-br ${card.color} text-white rounded-2xl p-8 flex flex-col justify-between h-44 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300`}
+                className={`group relative bg-gradient-to-br ${card.color} rounded-2xl p-8 flex flex-col justify-between h-44 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300`}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-4 translate-x-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-2.5 py-1 rounded-full w-max text-white/90">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${card.badgeColor} px-2.5 py-1 rounded-full w-max`}>
                   {card.badge}
                 </span>
                 <div className="relative z-10">
                   <h3 className="text-xl font-black leading-tight">{card.label}</h3>
-                  <p className="text-white/80 text-sm mt-1 group-hover:text-white transition-colors">{card.sub} →</p>
+                  <p className="opacity-80 text-sm mt-1 group-hover:opacity-100 transition-opacity">{card.sub} →</p>
                 </div>
               </Link>
             ))}
@@ -530,8 +585,8 @@ export default function Home() {
           <Link href="/gallery" className="hover:text-black transition-colors">Lookbook</Link>
           <Link href="/articles" className="hover:text-black transition-colors">Blog</Link>
           <Link href="/testimonials" className="hover:text-black transition-colors">Testimoni</Link>
-          <Link href="/cart" className="font-medium text-sm hover:text-gray-600">🛒 Keranjang</Link>
-          <Link href="/login" className="px-6 py-2 bg-black text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors">
+          <Link href="/cart" className="font-medium text-sm hover:text-lime-600">🛒 Keranjang</Link>
+          <Link href="/login" className="px-6 py-2 bg-lime-400 text-black text-sm font-bold rounded-md hover:bg-lime-500 transition-colors shadow-sm">
             Login
           </Link>
         </div>

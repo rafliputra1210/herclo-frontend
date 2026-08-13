@@ -41,9 +41,9 @@ export default function PublicHeader() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari kaos, kemeja, dll..." 
-            className="w-full bg-gray-100 border-none rounded-full py-2.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-black outline-none transition-all"
+            className="w-full bg-gray-100 border-none rounded-full py-2.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-lime-400 outline-none transition-all"
           />
-          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-black">
+          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-lime-500">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
             </svg>
@@ -51,9 +51,9 @@ export default function PublicHeader() {
         </form>
 
         <div className="flex items-center gap-5 text-sm font-semibold text-gray-600">
-          <Link href="/collection" className="hover:text-black transition-colors hidden md:block">Koleksi</Link>
-          <Link href="/cart" className="hover:text-black transition-colors text-xl hidden md:block">🛒</Link>
-          <Link href="/login" className="px-5 py-2 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition-colors hidden md:block">
+          <Link href="/collection" className="hover:text-lime-500 transition-colors hidden md:block">Koleksi</Link>
+          <Link href="/cart" className="hover:text-lime-500 transition-colors text-xl hidden md:block">🛒</Link>
+          <Link href="/login" className="px-5 py-2 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors hidden md:block shadow-sm">
             Login
           </Link>
         </div>
@@ -89,9 +89,9 @@ export default function PublicHeader() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari produk..." 
-                    className="w-full bg-gray-100 border-none rounded-lg py-3 pl-4 pr-10 text-sm focus:ring-2 focus:ring-black outline-none"
+                    className="w-full bg-gray-100 border-none rounded-lg py-3 pl-4 pr-10 text-sm focus:ring-2 focus:ring-lime-400 outline-none"
                   />
-                  <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+                  <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-lime-500">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
@@ -105,29 +105,29 @@ export default function PublicHeader() {
                   <div className="border-b border-gray-300 pb-2">
                     <p className="text-sm font-black text-gray-400 uppercase tracking-wider">Toko</p>
                   </div>
-                  <Link href="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors">
+                  <Link href="/" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">🏠</span> Beranda
                   </Link>
-                  <Link href="/collection" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors">
+                  <Link href="/collection" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">👕</span> Koleksi Produk
                   </Link>
-                  <Link href="/cart" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors md:hidden">
+                  <Link href="/cart" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors md:hidden">
                     <span className="text-xl">🛒</span> Keranjang Belanja
                   </Link>
                 </div>
                 
                 {/* Grup Eksplorasi */}
                 <div className="space-y-5">
-                  <div className="border-b border-emerald-300 pb-2">
-                    <p className="text-sm font-black text-emerald-600 uppercase tracking-wider">Eksplorasi HERCLO</p>
+                  <div className="border-b border-lime-400 pb-2">
+                    <p className="text-sm font-black text-lime-600 uppercase tracking-wider">Eksplorasi HERCLO</p>
                   </div>
-                  <Link href="/gallery" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors">
+                  <Link href="/gallery" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">✨</span> Lookbook & Galeri
                   </Link>
-                  <Link href="/articles" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors">
+                  <Link href="/articles" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">📰</span> Blog Fashion / Artikel
                   </Link>
-                  <Link href="/testimonials" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-black transition-colors">
+                  <Link href="/testimonials" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">⭐</span> Ulasan & Testimoni
                   </Link>
                 </div>
@@ -138,7 +138,7 @@ export default function PublicHeader() {
               <Link href="/dashboard" onClick={() => setIsSidebarOpen(false)} className="w-full flex justify-center py-3 border-2 border-black text-black font-bold rounded-lg hover:bg-gray-100 transition-colors">
                 Dashboard Saya
               </Link>
-              <Link href="/login" onClick={() => setIsSidebarOpen(false)} className="w-full flex justify-center py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-colors">
+              <Link href="/login" onClick={() => setIsSidebarOpen(false)} className="w-full flex justify-center py-3 bg-lime-400 text-black font-bold rounded-lg hover:bg-lime-500 transition-colors shadow-sm">
                 Login / Register
               </Link>
             </div>

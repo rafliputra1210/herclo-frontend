@@ -115,7 +115,7 @@ export default function CollectionPage() {
                     <button 
                       key={s} 
                       onClick={() => setVariant({...variant, size: s})} 
-                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.size === s ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.size === s ? 'border-lime-500 text-black bg-lime-400' : 'border-gray-300 text-gray-600'}`}
                     >
                       {s}
                     </button>
@@ -129,7 +129,7 @@ export default function CollectionPage() {
                     <button 
                       key={c} 
                       onClick={() => setVariant({...variant, color: c})} 
-                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.color === c ? 'border-black text-black bg-gray-100' : 'border-gray-300 text-gray-600'}`}
+                      className={`px-4 py-1.5 border rounded-md text-sm font-medium transition-colors ${variant.color === c ? 'border-lime-500 text-black bg-lime-400' : 'border-gray-300 text-gray-600'}`}
                     >
                       {c}
                     </button>
@@ -149,7 +149,7 @@ export default function CollectionPage() {
             <div className="flex gap-3 mt-6">
               <button 
                 onClick={() => handleBuy(false)} 
-                className="flex-1 bg-white text-black py-3 rounded-lg font-bold border-2 border-black hover:bg-gray-50 transition-colors"
+                className="flex-1 bg-lime-400 text-black py-3 rounded-lg font-bold border-2 border-lime-400 hover:bg-lime-500 transition-colors shadow-sm"
               >
                 + Keranjang
               </button>
@@ -171,14 +171,14 @@ export default function CollectionPage() {
           <div>
             <h3 className="font-bold text-lg mb-4 border-b pb-2">Kategori</h3>
             <div className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input type="radio" name="category" checked={selectedCategory === ''} onChange={() => setSelectedCategory('')} className="w-4 h-4 text-black focus:ring-black" />
-                <span className={`${selectedCategory === '' ? 'font-bold' : 'text-gray-600'}`}>Semua Produk</span>
+              <label className="flex items-center gap-3 cursor-pointer hover:text-lime-500 transition-colors">
+                <input type="radio" name="category" checked={selectedCategory === ''} onChange={() => setSelectedCategory('')} className="w-4 h-4 text-lime-500 focus:ring-lime-400" />
+                <span className={`${selectedCategory === '' ? 'font-bold text-lime-600' : 'text-gray-600'}`}>Semua Produk</span>
               </label>
               {categories.map(cat => (
-                <label key={cat.id} className="flex items-center gap-3 cursor-pointer">
-                  <input type="radio" name="category" checked={selectedCategory === String(cat.id)} onChange={() => setSelectedCategory(String(cat.id))} className="w-4 h-4 text-black focus:ring-black" />
-                  <span className={`${selectedCategory === String(cat.id) ? 'font-bold' : 'text-gray-600'}`}>{cat.name}</span>
+                <label key={cat.id} className="flex items-center gap-3 cursor-pointer hover:text-lime-500 transition-colors">
+                  <input type="radio" name="category" checked={selectedCategory === String(cat.id)} onChange={() => setSelectedCategory(String(cat.id))} className="w-4 h-4 text-lime-500 focus:ring-lime-400" />
+                  <span className={`${selectedCategory === String(cat.id) ? 'font-bold text-lime-600' : 'text-gray-600'}`}>{cat.name}</span>
                 </label>
               ))}
             </div>
@@ -189,7 +189,7 @@ export default function CollectionPage() {
             <select 
               value={sortOrder} 
               onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:border-black text-sm"
+              className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:border-lime-400 focus:ring-1 focus:ring-lime-400 text-sm"
             >
               <option value="">Paling Sesuai / Terbaru</option>
               <option value="price_asc">Harga Terendah</option>
@@ -208,7 +208,7 @@ export default function CollectionPage() {
           </div>
 
           {loading ? (
-            <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div></div>
+            <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-gray-200 border-t-lime-500 rounded-full animate-spin"></div></div>
           ) : products.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
               <span className="text-4xl mb-4 block">🔍</span>
@@ -232,7 +232,7 @@ export default function CollectionPage() {
                     <p className="font-black text-lg">Rp {new Intl.NumberFormat('id-ID').format(product.price)}</p>
                     <button
                       onClick={() => openModal(product)}
-                      className="w-full bg-black text-white py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-colors mt-4"
+                      className="w-full bg-lime-400 text-black py-2.5 rounded-lg font-medium hover:bg-lime-500 transition-colors mt-4 shadow-sm"
                     >
                       Beli / + Keranjang
                     </button>

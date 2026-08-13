@@ -55,7 +55,7 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-                isActive ? 'text-black font-bold' : 'text-gray-400 hover:text-gray-600'
+                isActive ? 'text-lime-500 font-bold' : 'text-gray-400 hover:text-lime-400'
               }`}
             >
               <span className={isActive ? 'scale-110 transition-transform' : ''}>
