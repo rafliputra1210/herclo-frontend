@@ -50,6 +50,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       console.error('Logout error:', e);
     } finally {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('herclo_token');
+      localStorage.removeItem('herclo_user');
       router.push('/login');
     }
   };

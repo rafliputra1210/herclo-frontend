@@ -356,7 +356,7 @@ export default function Home() {
           
           <div className="flex-1 relative">
             <div className="aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden relative z-10 border border-gray-200 shadow-xl">
-              <img src="https://images.unsplash.com/photo-1550614000-4b95f19069d3?q=80&w=800&auto=format&fit=crop" alt="HERCLO Studio" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+              <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop" alt="HERCLO Studio" className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
             </div>
             <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-gray-900 rounded-2xl z-0 hidden md:block"></div>
           </div>
@@ -578,19 +578,68 @@ export default function Home() {
       </div>
 
       {/* FOOTER */}
-      <footer className="bg-white border-t border-gray-100 py-12 text-center">
-        <Link href="/" className="text-2xl font-black tracking-tight text-gray-900">HERCLO.</Link>
-        <p className="text-gray-400 text-sm mt-2 mb-6">Dailywear · Sportwear · Muslimwear</p>
-        <div className="flex justify-center gap-6 text-sm font-semibold text-gray-500 mb-6 flex-wrap items-center">
-          <Link href="/gallery" className="hover:text-black transition-colors">Lookbook</Link>
-          <Link href="/articles" className="hover:text-black transition-colors">Blog</Link>
-          <Link href="/testimonials" className="hover:text-black transition-colors">Testimoni</Link>
-          <Link href="/cart" className="font-medium text-sm hover:text-lime-600">🛒 Keranjang</Link>
-          <Link href="/login" className="px-6 py-2 bg-lime-400 text-black text-sm font-bold rounded-md hover:bg-lime-500 transition-colors shadow-sm">
-            Login
-          </Link>
+      <footer className="bg-white border-t border-gray-100 pt-16 pb-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            
+            {/* Kolom 1: Brand */}
+            <div className="col-span-1 md:col-span-1">
+              <Link href="/" className="text-3xl font-black tracking-tighter text-gray-900">HERCLO.</Link>
+              <p className="text-gray-500 text-sm mt-4 leading-relaxed">
+                Mendefinisikan ulang kepercayaan diri Anda melalui koleksi Dailywear, Sportwear, dan Muslimwear premium.
+              </p>
+            </div>
+
+            {/* Kolom 2: Eksplorasi */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">Eksplorasi</h4>
+              <ul className="space-y-3 text-sm text-gray-500 font-medium">
+                <li><Link href="/#koleksi" className="hover:text-black transition-colors">Koleksi Terbaru</Link></li>
+                <li><Link href="/gallery" className="hover:text-black transition-colors">Lookbook Galeri</Link></li>
+                <li><Link href="/articles" className="hover:text-black transition-colors">Journal & Blog</Link></li>
+                <li><Link href="/testimonials" className="hover:text-black transition-colors">Testimoni Pelanggan</Link></li>
+              </ul>
+            </div>
+
+            {/* Kolom 3: Bantuan */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">Bantuan Layanan</h4>
+              <ul className="space-y-3 text-sm text-gray-500 font-medium">
+                <li><Link href="/faq" className="hover:text-black transition-colors">Tanya Jawab (FAQ)</Link></li>
+                <li><Link href="/contact" className="hover:text-black transition-colors">Hubungi Kami</Link></li>
+                <li><Link href="/login" className="hover:text-black transition-colors">Lacak Pesanan</Link></li>
+              </ul>
+            </div>
+
+            {/* Kolom 4: Kontak Cepat */}
+            <div>
+              <h4 className="font-bold text-gray-900 mb-4">Kontak</h4>
+              <ul className="space-y-3 text-sm text-gray-500 font-medium">
+                <li className="flex items-start gap-2">
+                  <span>📍</span> Surabaya, Jawa Timur
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>✉️</span> hello@herclo.com
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>📞</span> +62 812-3456-7890
+                </li>
+              </ul>
+            </div>
+            
+          </div>
+
+          <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-400 text-xs font-semibold">
+              &copy; {new Date().getFullYear()} HERCLO Official. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
+              <span className="hover:text-black cursor-pointer transition-colors">Instagram</span>
+              <span className="hover:text-black cursor-pointer transition-colors">TikTok</span>
+              <span className="hover:text-black cursor-pointer transition-colors">Shopee</span>
+            </div>
+          </div>
         </div>
-        <p className="text-gray-300 text-xs">&copy; {new Date().getFullYear()} HERCLO Official. All rights reserved.</p>
       </footer>
     </main>
   );

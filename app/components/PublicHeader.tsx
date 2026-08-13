@@ -52,6 +52,9 @@ export default function PublicHeader() {
 
         <div className="flex items-center gap-5 text-sm font-semibold text-gray-600">
           <Link href="/collection" className="hover:text-lime-500 transition-colors hidden md:block">Koleksi</Link>
+          <Link href="/articles" className="hover:text-lime-500 transition-colors hidden md:block">Journal</Link>
+          <Link href="/faq" className="hover:text-lime-500 transition-colors hidden md:block">FAQ</Link>
+          <Link href="/contact" className="hover:text-lime-500 transition-colors hidden md:block">Kontak</Link>
           <Link href="/cart" className="hover:text-lime-500 transition-colors text-xl hidden md:block">🛒</Link>
           <Link href="/login" className="px-5 py-2 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors hidden md:block shadow-sm">
             Login
@@ -125,10 +128,23 @@ export default function PublicHeader() {
                     <span className="text-xl">✨</span> Lookbook & Galeri
                   </Link>
                   <Link href="/articles" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
-                    <span className="text-xl">📰</span> Blog Fashion / Artikel
+                    <span className="text-xl">📰</span> Blog Fashion
                   </Link>
                   <Link href="/testimonials" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
                     <span className="text-xl">⭐</span> Ulasan & Testimoni
+                  </Link>
+                </div>
+
+                {/* Grup Bantuan */}
+                <div className="space-y-5">
+                  <div className="border-b border-gray-300 pb-2">
+                    <p className="text-sm font-black text-gray-400 uppercase tracking-wider">Bantuan</p>
+                  </div>
+                  <Link href="/faq" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
+                    <span className="text-xl">❓</span> FAQ
+                  </Link>
+                  <Link href="/contact" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 font-semibold text-gray-800 hover:text-lime-500 transition-colors">
+                    <span className="text-xl">📞</span> Hubungi Kami
                   </Link>
                 </div>
               </div>

@@ -61,6 +61,9 @@ export default function CustomerDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('herclo_token');
+    localStorage.removeItem('herclo_user');
     router.push('/login');
   };
 

@@ -1,97 +1,82 @@
 'use client';
 
 import { useState } from 'react';
-import api from '../../lib/axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import api from '../../lib/axios';
 
-export default function Login() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [dashboardCode, setDashboardCode] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      const response = await api.post('/login', {
-        email: email,
-        password: password,
+      // Kita kirim dashboardCode sebagai 'password' ke backend
+      const res = await api.post('/login', { 
+        email, 
+        password: dashboardCode 
       });
-
-      // Menyimpan Token ke LocalStorage browser
-      localStorage.setItem('auth_token', response.data.access_token);
       
-      const user = response.data.data;
+      // Simpan token ke localStorage agar sesi tetap aktif
+      localStorage.setItem('auth_token', res.data.token);
+      localStorage.setItem('herclo_token', res.data.token);
+      localStorage.setItem('herclo_user', JSON.stringify(res.data.user));
+      
+      // Arahkan ke halaman yang sesuai berdasarkan role
+      const user = res.data.user;
       if (user?.role === 'admin' || user?.role === 'super_admin') {
         router.push('/admin');
       } else {
         router.push('/dashboard');
       }
-      
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Email atau Password salah.');
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Gagal masuk. Periksa kembali data Anda.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-2">HERCLO.</h1>
-            <h2 className="text-gray-500">Masuk ke akun Anda</h2>
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-10">
+          <Link href="/" className="text-4xl font-black tracking-tighter text-gray-900">HERCLO.</Link>
+          <h1 className="text-2xl font-bold mt-6 mb-2">Lacak Pesanan Anda</h1>
+          <p className="text-gray-500 text-sm">Masukkan Email dan Kode Dashboard yang Anda buat saat checkout.</p>
         </div>
-        
-        {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded mb-6 text-sm">
-                {error}
+
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold mb-2 text-gray-700">Email Anda</label>
+              <input 
+                type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@email.com"
+                className="w-full border border-gray-300 p-3.5 rounded-lg outline-none focus:ring-2 focus:ring-black transition-all"
+              />
             </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input 
-              type="email" 
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@email.com"
-              required 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <input 
-              type="password" 
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required 
-            />
-          </div>
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            className="w-full flex justify-center bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-400"
-          >
-            {isLoading ? 'Memproses...' : 'Masuk'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-            <Link href="/" className="hover:text-black hover:underline transition-colors">
-                &larr; Kembali ke Beranda
-            </Link>
+            <div>
+              <label className="block text-sm font-bold mb-2 text-gray-700">Kode Dashboard</label>
+              <input 
+                type="password" required value={dashboardCode} onChange={(e) => setDashboardCode(e.target.value)}
+                placeholder="Masukkan kode rahasia Anda"
+                className="w-full border border-gray-300 p-3.5 rounded-lg outline-none focus:ring-2 focus:ring-black transition-all"
+              />
+            </div>
+            <button 
+              type="submit" disabled={loading}
+              className="w-full bg-black text-white py-4 rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-400 transition-colors"
+            >
+              {loading ? 'Memeriksa Data...' : 'Masuk ke Dashboard'}
+            </button>
+          </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
