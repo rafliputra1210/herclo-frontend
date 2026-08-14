@@ -84,12 +84,9 @@ export default function PublicSidebar() {
         }`}
       >
         <div>
-          {/* Brand Header */}
           <div className="p-6 border-b border-gray-800 flex items-center justify-between">
-            <Link href="/" className="group">
-              <h2 className="text-2xl font-black tracking-tight text-white group-hover:text-gray-300 transition-colors">
-                HERCLO.
-              </h2>
+            <Link href="/" className="group flex flex-col gap-1.5">
+              <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-8 w-auto object-contain brightness-0 invert" />
               <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
                 Official Collection
               </p>

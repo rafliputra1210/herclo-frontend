@@ -44,7 +44,7 @@ export default function ArticleReadPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans gap-4">
-        <div className="text-3xl font-black tracking-tight text-gray-900">HERCLO.</div>
+        <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-12 w-auto object-contain animate-pulse" />
         <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
       </div>
     );

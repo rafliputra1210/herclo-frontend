@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BackButton from '../components/BackButton';
 
 interface CartItem {
   id: number;
@@ -46,6 +47,9 @@ export default function CartPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-10 font-sans text-gray-900">
       <div className="max-w-5xl mx-auto px-6">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <h1 className="text-3xl font-bold mb-8">Keranjang Belanja</h1>
 
         {cartItems.length === 0 ? (

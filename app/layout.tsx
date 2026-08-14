@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = {
   title: 'HERCLO. | Elevate Your Style',
   description: 'Dailywear, Sportwear, dan Muslimwear Premium',
+  icons: {
+    icon: '/LOGO HERCLO5.png',
+  }
 };
 
 export default function RootLayout({

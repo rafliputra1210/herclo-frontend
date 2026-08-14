@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios'; // Pastikan path ini sesuai dengan struktur folder kamu
 import { useRouter } from 'next/navigation';
+import BackButton from '../components/BackButton';
 
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -144,6 +145,9 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-gray-50 py-10 font-sans text-gray-900 selection:bg-emerald-500 selection:text-white">
       <div className="max-w-5xl mx-auto px-6">
+        <div className="mb-6">
+          <BackButton />
+        </div>
         <h1 className="text-3xl font-black tracking-tight mb-8">Checkout Pesanan</h1>
 
         <form onSubmit={handleCheckout} className="grid grid-cols-1 md:grid-cols-2 gap-8">

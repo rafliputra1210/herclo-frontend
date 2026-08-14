@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import BackButton from '../components/BackButton';
 
 interface OrderItem {
   id: number;
@@ -74,7 +75,12 @@ export default function CustomerDashboard() {
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-900">
       <header className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-40">
-        <Link href="/" className="text-2xl font-black tracking-tight">HERCLO.</Link>
+        <div className="flex items-center gap-3">
+          <BackButton label="" className="!p-2" />
+          <Link href="/" className="flex items-center">
+            <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-9 w-auto object-contain" />
+          </Link>
+        </div>
         <div className="flex gap-4">
           <Link href="/" className="text-sm font-medium text-gray-600 hover:text-black mt-1">Belanja Lagi</Link>
           <button onClick={handleLogout} className="text-sm font-bold text-red-500 hover:text-red-700">Keluar</button>

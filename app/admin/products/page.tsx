@@ -13,6 +13,7 @@ interface Product {
   name: string;
   price: string | number;
   stock_quantity: number;
+  description?: string;
   image_path?: string; // <-- Tambahkan ini
   category_id: number;
   category?: { name: string; };
@@ -32,6 +33,7 @@ export default function ProductManagement() {
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
+  const [description, setDescription] = useState('');
   const [image, setImage] = useState<File | null>(null); // State khusus untuk File Gambar
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,12 +54,18 @@ export default function ProductManagement() {
   };
 
   useEffect(() => {
-    fetchData();  
+    fetchData();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('add') === 'true') {
+        setIsFormOpen(true);
+      }
+    }
   }, []);
 
   const handleAddClick = () => {
     setEditingId(null);
-    setName(''); setCategoryId(''); setPrice(''); setStock(''); setImage(null);
+    setName(''); setCategoryId(''); setPrice(''); setStock(''); setDescription(''); setImage(null);
     setIsFormOpen(!isFormOpen);
   };
 
@@ -67,6 +75,7 @@ export default function ProductManagement() {
     setCategoryId(String(product.category_id));
     setPrice(String(product.price));
     setStock(String(product.stock_quantity));
+    setDescription(product.description || '');
     setImage(null); // Kosongkan file input saat edit
     setIsFormOpen(true);
   };
@@ -81,6 +90,7 @@ export default function ProductManagement() {
     formData.append('category_id', categoryId);
     formData.append('price', price);
     formData.append('stock_quantity', stock);
+    formData.append('description', description);
     
     // Jika ada gambar baru yang dipilih, masukkan ke form
     if (image) {
@@ -169,6 +179,17 @@ export default function ProductManagement() {
                 <div>
                     <label className="block text-sm font-medium mb-1">Stok Awal</label>
                     <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} required min="0" className="w-full border border-gray-300 p-2 rounded focus:border-black outline-none" />
+                </div>
+                {/* TAMBAHAN KOLOM DESKRIPSI */}
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Deskripsi Produk</label>
+                    <textarea 
+                      value={description} 
+                      onChange={(e) => setDescription(e.target.value)} 
+                      rows={3}
+                      className="w-full border border-gray-300 p-2 rounded focus:border-black outline-none resize-none text-sm"
+                      placeholder="Tulis detail produk..."
+                    />
                 </div>
                 {/* TAMBAHAN KOLOM GAMBAR */}
                 <div className="md:col-span-2">

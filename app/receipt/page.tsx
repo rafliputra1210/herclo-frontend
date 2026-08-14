@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BackButton from '../components/BackButton';
 
 export default function ReceiptPage() {
   const [receipt, setReceipt] = useState<any>(null);
@@ -21,7 +22,10 @@ export default function ReceiptPage() {
   if (!receipt) return null;
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans relative">
+      <div className="absolute top-6 left-6">
+        <BackButton />
+      </div>
       <div className="bg-white max-w-lg w-full rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         
         {/* Header Struk */}

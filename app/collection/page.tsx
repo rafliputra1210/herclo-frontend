@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/axios';
 import PublicHeader from '../components/PublicHeader';
@@ -8,7 +8,7 @@ import PublicHeader from '../components/PublicHeader';
 interface Category { id: number; name: string; }
 interface Product { id: number; name: string; price: number; image_path?: string; category?: { name: string; }; }
 
-export default function CollectionPage() {
+function CollectionContent() {
   const searchParams = useSearchParams();
   const searchKeyword = searchParams.get('search') || '';
 
@@ -167,34 +167,48 @@ export default function CollectionPage() {
       <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row gap-10">
         
         {/* SIDEBAR FILTER */}
-        <aside className="w-full md:w-64 shrink-0 space-y-8">
-          <div>
-            <h3 className="font-bold text-lg mb-4 border-b pb-2">Kategori</h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer hover:text-lime-500 transition-colors">
-                <input type="radio" name="category" checked={selectedCategory === ''} onChange={() => setSelectedCategory('')} className="w-4 h-4 text-lime-500 focus:ring-lime-400" />
-                <span className={`${selectedCategory === '' ? 'font-bold text-lime-600' : 'text-gray-600'}`}>Semua Produk</span>
-              </label>
+        <aside className="w-full md:w-64 shrink-0 space-y-6">
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-4">Kategori</h3>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={() => setSelectedCategory('')}
+                className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedCategory === '' ? 'bg-black text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
+              >
+                Semua Produk
+              </button>
               {categories.map(cat => (
-                <label key={cat.id} className="flex items-center gap-3 cursor-pointer hover:text-lime-500 transition-colors">
-                  <input type="radio" name="category" checked={selectedCategory === String(cat.id)} onChange={() => setSelectedCategory(String(cat.id))} className="w-4 h-4 text-lime-500 focus:ring-lime-400" />
-                  <span className={`${selectedCategory === String(cat.id) ? 'font-bold text-lime-600' : 'text-gray-600'}`}>{cat.name}</span>
-                </label>
+                <button 
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(String(cat.id))}
+                  className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${selectedCategory === String(cat.id) ? 'bg-black text-white shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
+                >
+                  {cat.name}
+                </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <h3 className="font-bold text-lg mb-4 border-b pb-2">Urutkan Harga</h3>
-            <select 
-              value={sortOrder} 
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:border-lime-400 focus:ring-1 focus:ring-lime-400 text-sm"
-            >
-              <option value="">Paling Sesuai / Terbaru</option>
-              <option value="price_asc">Harga Terendah</option>
-              <option value="price_desc">Harga Tertinggi</option>
-            </select>
+          <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-4">Urutkan</h3>
+            <div className="space-y-2">
+              {[
+                { value: '', label: 'Terbaru / Sesuai' },
+                { value: 'price_asc', label: 'Harga Terendah' },
+                { value: 'price_desc', label: 'Harga Tertinggi' },
+              ].map(sort => (
+                <button
+                  key={sort.value}
+                  onClick={() => setSortOrder(sort.value)}
+                  className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${sortOrder === sort.value ? 'bg-lime-400 text-black shadow-sm ring-1 ring-lime-500/50' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-black'}`}
+                >
+                  <span>{sort.label}</span>
+                  {sortOrder === sort.value && (
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </aside>
 
@@ -245,5 +259,13 @@ export default function CollectionPage() {
 
       </div>
     </main>
+  );
+}
+
+export default function CollectionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-500">Memuat...</div>}>
+      <CollectionContent />
+    </Suspense>
   );
 }

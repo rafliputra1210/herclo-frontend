@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import BackButton from '../components/BackButton';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
@@ -19,7 +20,10 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white font-sans text-gray-900 pb-20">
+    <main className="min-h-screen bg-white font-sans text-gray-900 pb-20 relative">
+      <div className="absolute top-6 left-6 z-10">
+        <BackButton className="!text-white !bg-transparent hover:!bg-white/10 !border-white/20" />
+      </div>
       <header className="bg-black text-white py-24 text-center px-6">
         <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">Hubungi Kami</h1>
         <p className="text-gray-400 max-w-xl mx-auto">Punya saran, keluhan, atau tawaran kerja sama? Jangan ragu untuk mengirimkan pesan kepada tim kami.</p>

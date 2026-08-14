@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/axios';
+import BackButton from '../components/BackButton';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,10 +43,15 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans">
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-6 font-sans relative">
+      <div className="absolute top-6 left-6">
+        <BackButton />
+      </div>
       <div className="max-w-md w-full">
         <div className="text-center mb-10">
-          <Link href="/" className="text-4xl font-black tracking-tighter text-gray-900">HERCLO.</Link>
+          <Link href="/" className="flex items-center justify-center">
+            <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-12 w-auto object-contain" />
+          </Link>
           <h1 className="text-2xl font-bold mt-6 mb-2">Lacak Pesanan Anda</h1>
           <p className="text-gray-500 text-sm">Masukkan Email dan Kode Dashboard yang Anda buat saat checkout.</p>
         </div>

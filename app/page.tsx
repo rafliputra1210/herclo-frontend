@@ -435,15 +435,15 @@ export default function Home() {
                 Lihat Semua Galeri →
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar snap-x snap-mandatory -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-x-visible">
               {galleries.slice(0, 8).map((img) => (
-                <div key={img.id} className="relative aspect-[3/4] rounded-2xl overflow-hidden group shadow-sm border border-gray-100">
+                <div key={img.id} className="relative aspect-[3/4] w-2/3 shrink-0 snap-start rounded-2xl overflow-hidden group shadow-sm border border-gray-100 md:w-auto md:shrink">
                   <img
                     src={img.image_path.startsWith('http') ? img.image_path : `http://127.0.0.1:8000${img.image_path}`}
                     alt={img.title}
                     className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                     <p className="text-white font-semibold text-sm leading-tight">{img.title}</p>
                     {img.category && (
                       <span className="text-[10px] text-white/70 mt-0.5">{img.category}</span>
