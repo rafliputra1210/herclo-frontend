@@ -16,13 +16,18 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Otomatis via Midtrans');
 
+  // State untuk Fitur Promo
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   // 1. Suntikkan Script Midtrans Snap
   useEffect(() => {
     const snapScript = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    // PENTING: Ganti dengan Client Key Sandbox Midtrans milikmu
+    // Kunci Sandbox Midtrans yang sudah dimasukkan
     const clientKey = 'Mid-client-nKHReRtdDSAr5DCl';
 
     const script = document.createElement('script');
@@ -47,10 +52,29 @@ export default function CheckoutPage() {
     }
   }, [router]);
 
-  // Hitung Total Belanja
+  // Hitung Total Belanja & Diskon
   const totalAmount = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const finalTotal = totalAmount - discountAmount;
 
-  // 3. Proses Checkout & Pemanggilan Midtrans
+  // 3. Fungsi Validasi Kode Promo ke Backend
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput) return;
+    try {
+      const res = await api.post('/promo/validate', {
+        code: promoCodeInput,
+        total_amount: totalAmount
+      });
+      setDiscountAmount(res.data.discount_amount);
+      setAppliedPromo(res.data.promo_code);
+      alert(res.data.message);
+    } catch (error: any) {
+      setDiscountAmount(0);
+      setAppliedPromo(null);
+      alert(error.response?.data?.message || 'Gagal menggunakan promo');
+    }
+  };
+
+  // 4. Proses Checkout & Pemanggilan Midtrans
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -59,13 +83,14 @@ export default function CheckoutPage() {
     const fullShippingAddress = `${recipientName} | ${address}`;
 
     try {
-      // Tembak API Checkout di Laravel (termasuk email & kode dashboard)
+      // Tembak API Checkout di Laravel dengan menyertakan kode promo (jika ada)
       const response = await api.post('/checkout', {
         email: email,
         dashboard_code: dashboardCode,
         shipping_address: fullShippingAddress,
         payment_method: paymentMethod,
-        items: cartItems
+        items: cartItems,
+        promo_code: appliedPromo 
       });
 
       const snapToken = response.data.snap_token;
@@ -80,7 +105,7 @@ export default function CheckoutPage() {
               orderId: result.order_id,
               email: email,
               dashboardCode: dashboardCode,
-              total: totalAmount
+              total: finalTotal
             }));
             localStorage.removeItem('herclo_cart'); // Kosongkan keranjang
             router.push('/receipt'); // Lempar ke halaman sukses
@@ -92,7 +117,7 @@ export default function CheckoutPage() {
               orderId: result.order_id,
               email: email,
               dashboardCode: dashboardCode,
-              total: totalAmount
+              total: finalTotal
             }));
             localStorage.removeItem('herclo_cart');
             router.push('/receipt');
@@ -208,11 +233,42 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            {/* FITUR KODE PROMO */}
+            <div className="mb-6 border-b border-gray-100 pb-6">
+              <label className="block text-sm font-semibold mb-2">Punya Kode Promo?</label>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={promoCodeInput} 
+                  onChange={(e) => setPromoCodeInput(e.target.value)}
+                  disabled={appliedPromo !== null}
+                  placeholder="Masukkan kode..."
+                  className="flex-1 border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 uppercase text-sm"
+                />
+                {appliedPromo ? (
+                  <button type="button" onClick={() => {setAppliedPromo(null); setDiscountAmount(0); setPromoCodeInput('');}} className="px-4 bg-red-100 text-red-600 font-bold rounded-lg text-sm hover:bg-red-200 transition-colors">
+                    Batal
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleApplyPromo} className="px-4 bg-gray-900 text-white font-bold rounded-lg text-sm hover:bg-gray-800 transition-colors">
+                    Pakai
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* RINCIAN HARGA */}
             <div className="space-y-3 mb-6 border-b border-gray-100 pb-6 text-sm">
               <div className="flex justify-between text-gray-500">
                 <span>Subtotal Produk</span>
                 <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-bold">
+                  <span>Diskon Promo ({appliedPromo})</span>
+                  <span>- Rp {new Intl.NumberFormat('id-ID').format(discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-500">
                 <span>Biaya Layanan Midtrans</span>
                 <span className="text-emerald-500 font-semibold">Gratis</span>
@@ -221,7 +277,7 @@ export default function CheckoutPage() {
 
             <div className="flex justify-between font-black text-2xl mb-8 text-gray-900">
               <span>Total Tagihan</span>
-              <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
+              <span>Rp {new Intl.NumberFormat('id-ID').format(finalTotal)}</span>
             </div>
 
             <button
