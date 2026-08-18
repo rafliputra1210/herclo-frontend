@@ -14,7 +14,7 @@ interface Product {
   price: string | number;
   stock_quantity: number;
   description?: string;
-  image_path?: string; // <-- Tambahkan ini
+  image_path?: string;
   category_id: number;
   category?: { name: string; };
 }
@@ -34,7 +34,7 @@ export default function ProductManagement() {
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState<File | null>(null); // State khusus untuk File Gambar
+  const [image, setImage] = useState<File | null>(null);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -42,10 +42,12 @@ export default function ProductManagement() {
     try {
       const [prodRes, catRes] = await Promise.all([
         api.get('/admin/products'),
-        api.get('/categories') // <-- UBAH BAGIAN INI (Hapus /admin)
+        api.get('/categories') // Mengambil data kategori dari endpoint backend
       ]);
-      setProducts(prodRes.data.data);
-      setCategories(catRes.data.data);
+      
+      // Menyesuaikan struktur data API Laravel (menggunakan .data.data atau fallback ke .data)
+      setProducts(prodRes.data.data || prodRes.data);
+      setCategories(catRes.data.data || catRes.data);
     } catch (error) {
       console.error('Gagal mengambil data:', error);
     } finally {
@@ -76,15 +78,14 @@ export default function ProductManagement() {
     setPrice(String(product.price));
     setStock(String(product.stock_quantity));
     setDescription(product.description || '');
-    setImage(null); // Kosongkan file input saat edit
+    setImage(null);
     setIsFormOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Karena ada file gambar, kita WAJIB menggunakan FormData
+
     const formData = new FormData();
     formData.append('name', name);
     formData.append('category_id', categoryId);
@@ -92,12 +93,10 @@ export default function ProductManagement() {
     formData.append('stock_quantity', stock);
     formData.append('description', description);
     
-    // Jika ada gambar baru yang dipilih, masukkan ke form
     if (image) {
       formData.append('image', image);
     }
     
-    // Jika edit, metode PUT di Laravel membutuhkan trick khusus via POST + _method
     if (editingId) {
       formData.append('_method', 'PUT');
     }
@@ -168,7 +167,7 @@ export default function ProductManagement() {
                     <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="w-full border border-gray-300 p-2 rounded focus:border-black outline-none bg-white">
                         <option value="">-- Pilih Kategori --</option>
                         {categories.map(cat => (
-                           <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
                         ))}
                     </select>
                 </div>
@@ -180,7 +179,6 @@ export default function ProductManagement() {
                     <label className="block text-sm font-medium mb-1">Stok Awal</label>
                     <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} required min="0" className="w-full border border-gray-300 p-2 rounded focus:border-black outline-none" />
                 </div>
-                {/* TAMBAHAN KOLOM DESKRIPSI */}
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">Deskripsi Produk</label>
                     <textarea 
@@ -191,7 +189,6 @@ export default function ProductManagement() {
                       placeholder="Tulis detail produk..."
                     />
                 </div>
-                {/* TAMBAHAN KOLOM GAMBAR */}
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">Gambar Produk</label>
                     <input 
@@ -239,10 +236,9 @@ export default function ProductManagement() {
                 products.map((product) => (
                   <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="p-4 flex items-center gap-4">
-                        {/* TAMPILAN THUMBNAIL GAMBAR DI TABEL */}
                         <div className="w-12 h-12 rounded bg-gray-100 flex-shrink-0 overflow-hidden border">
                           {product.image_path ? (
-                            <img src={`http://127.0.0.1:8000${product.image_path}`} alt={product.name} className="w-full h-full object-cover" />
+                            <img src={`https://api.herclo.co.id${product.image_path}`} alt={product.name} className="w-full h-full object-cover" />
                           ) : (
                             <span className="flex items-center justify-center h-full text-[10px] text-gray-400">No Img</span>
                           )}
