@@ -349,8 +349,8 @@ function CollectionContent() {
                     className="bg-white group cursor-pointer flex flex-col h-full border border-transparent hover:border-gray-100 transition-colors"
                   >
                     
-                    {/* TINGGI GAMBAR: h-48 di HP, h-80 di Desktop */}
-                    <div className="h-48 sm:h-64 md:h-80 bg-gray-100 relative overflow-hidden mb-3">
+                    {/* TINGGI GAMBAR: aspect-[3/4] agar gambar memanjang & tidak terlalu lebar */}
+                    <div className="aspect-[3/4] w-full bg-gray-100 relative overflow-hidden mb-3">
                       {product.image_path ? (
                         <img src={`${BACKEND_URL}${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                       ) : (
