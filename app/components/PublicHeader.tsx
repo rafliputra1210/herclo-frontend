@@ -21,14 +21,16 @@ export default function PublicHeader() {
 
   return (
     <>
-      <header className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
-        <div className="flex items-center gap-4">
+      <header className="bg-white border-b px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xs">
+        <div className="flex items-center gap-3 md:gap-6">
           {pathname !== '/' && (
-            <BackButton label="" className="!p-2.5" />
+            <BackButton label="" className="p-2!" />
           )}
+          
+          {/* Tombol Hamburger (Khusus Mobile) */}
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            className="text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors focus:outline-none"
+            className="md:hidden text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors focus:outline-none"
             aria-label="Buka Menu Utama"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -36,34 +38,44 @@ export default function PublicHeader() {
             </svg>
           </button>
           
-          <Link href="/" className="flex items-center">
-            <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-10 w-auto object-contain" />
+          <Link href="/" className="flex items-center shrink-0">
+            <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-9 md:h-10 w-auto object-contain" />
           </Link>
         </div>
-        
-        {/* Kolom Pencarian (Tampil di Desktop) */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8 relative">
-          <input 
-            type="text" 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari kaos, kemeja, dll..." 
-            className="w-full bg-gray-100 border-none rounded-full py-2.5 pl-5 pr-12 text-sm focus:ring-2 focus:ring-lime-400 outline-none transition-all"
-          />
-          <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-lime-500">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-          </button>
-        </form>
 
-        <div className="flex items-center gap-5 text-sm font-semibold text-gray-600">
-          <Link href="/collection" className="hover:text-lime-500 transition-colors hidden md:block">Koleksi</Link>
-          <Link href="/articles" className="hover:text-lime-500 transition-colors hidden md:block">Journal</Link>
-          <Link href="/faq" className="hover:text-lime-500 transition-colors hidden md:block">FAQ</Link>
-          <Link href="/contact" className="hover:text-lime-500 transition-colors hidden md:block">Kontak</Link>
-          <Link href="/cart" className="hover:text-lime-500 transition-colors text-xl hidden md:block">🛒</Link>
-          <Link href="/login" className="px-5 py-2 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors hidden md:block shadow-sm">
+        {/* METODE NAVIGASI LENGKAP PADA DESKTOP */}
+        <nav className="hidden md:flex items-center gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-gray-700">
+          <Link href="/" className={`hover:text-lime-500 transition-colors ${pathname === '/' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Beranda</Link>
+          <Link href="/collection" className={`hover:text-lime-500 transition-colors ${pathname === '/collection' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Koleksi</Link>
+          <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Lookbook</Link>
+          <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Journal</Link>
+          <Link href="/testimonials" className={`hover:text-lime-500 transition-colors ${pathname === '/testimonials' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Testimoni</Link>
+          <Link href="/faq" className={`hover:text-lime-500 transition-colors ${pathname === '/faq' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>FAQ</Link>
+          <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Kontak</Link>
+        </nav>
+        
+        {/* KOLOM PENCARIAN & FITUR KANAN DESKTOP */}
+        <div className="flex items-center gap-3 lg:gap-4">
+          <form onSubmit={handleSearch} className="hidden xl:flex relative w-48 lg:w-56">
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari..." 
+              className="w-full bg-gray-100 border-none rounded-full py-1.5 pl-4 pr-10 text-xs focus:ring-2 focus:ring-lime-400 outline-none transition-all"
+            />
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-lime-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </button>
+          </form>
+
+          <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative" title="Keranjang Belanja">
+            <span className="text-lg">🛒</span>
+          </Link>
+
+          <Link href="/login" className="px-4 py-2 bg-lime-400 text-black font-black text-xs uppercase tracking-wider rounded-full hover:bg-lime-500 transition-colors shadow-xs">
             Login
           </Link>
         </div>
@@ -71,7 +83,7 @@ export default function PublicHeader() {
 
       {/* --- SIDEBAR (SLIDING DRAWER) --- */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-[100] flex">
+        <div className="fixed inset-0 z-100 flex">
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setIsSidebarOpen(false)}

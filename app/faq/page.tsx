@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import BackButton from '../components/BackButton';
+import PublicHeader from '../components/PublicHeader';
 
 const faqData = [
   {
@@ -36,9 +36,7 @@ export default function FAQPage() {
 
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900 pb-24 relative">
-      <div className="absolute top-6 left-6 z-10">
-        <BackButton />
-      </div>
+      <PublicHeader />
       <header className="bg-gray-50 py-20 text-center border-b border-gray-100 px-6">
         <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4">Pertanyaan Populer (FAQ)</h1>
         <p className="text-gray-500 max-w-xl mx-auto">Temukan jawaban cepat untuk pertanyaan yang sering diajukan oleh pelanggan HERCLO.</p>

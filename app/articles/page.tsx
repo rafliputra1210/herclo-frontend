@@ -30,7 +30,7 @@ export default function PublicArticles() {
       <PublicHeader />
 
       {/* Page Hero */}
-      <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-b border-amber-100 py-16 md:py-24 px-6">
+      <div className="bg-linear-to-br from-amber-50 to-orange-50 border-b border-amber-100 py-16 md:py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <span className="text-xs font-bold uppercase tracking-widest text-amber-600 bg-amber-100 px-3 py-1 rounded-full border border-amber-200 inline-block mb-4">
             HERCLO Journal
@@ -63,7 +63,7 @@ export default function PublicArticles() {
                 } gap-8 items-center bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300`}
               >
                 {/* Thumbnail Placeholder */}
-                <div className="w-full md:w-72 shrink-0 h-52 md:h-full min-h-[13rem] bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+                <div className="w-full md:w-72 shrink-0 h-52 md:h-full min-h-52 bg-linear-to-br from-amber-50 to-orange-100 flex items-center justify-center">
                   <span className="text-5xl font-black text-amber-200 group-hover:scale-110 transition-transform duration-500">
                     HERCLO
                   </span>
