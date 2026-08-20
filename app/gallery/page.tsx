@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
 import Link from 'next/link';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 import PublicHeader from '../components/PublicHeader';
 
 interface Gallery {
@@ -82,7 +84,7 @@ export default function PublicGallery() {
                 className="break-inside-avoid relative rounded-2xl overflow-hidden group shadow-sm border border-gray-100 bg-gray-100 mb-4"
               >
                 <img 
-                  src={`http://127.0.0.1:8000${img.image_path}`} 
+                  src={`${BACKEND_URL}${img.image_path}`} 
                   alt={img.title} 
                   className="object-cover w-full h-full"
                 />

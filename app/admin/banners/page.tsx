@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 interface Banner {
   id: number;
   title: string;
@@ -159,7 +161,7 @@ export default function BannerManagement() {
                   {/* Preview Gambar */}
                   <div className="md:w-1/2 h-48 bg-gray-100 relative">
                     <img 
-                      src={`http://127.0.0.1:8000${banner.image_path}`} 
+                      src={`${BACKEND_URL}${banner.image_path}`} 
                       alt={banner.title || 'Banner Image'} 
                       className="object-cover w-full h-full"
                     />

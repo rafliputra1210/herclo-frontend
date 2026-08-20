@@ -5,7 +5,7 @@ import BottomNav from './components/BottomNav'; // <-- Tambahkan import ini
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'HERCLO. | Elevate Your Style',
+  title: 'HERCLO. | Show More Be More',
   description: 'Dailywear, Sportwear, dan Muslimwear Premium',
   icons: {
     icon: '/LOGO HERCLO5.png',

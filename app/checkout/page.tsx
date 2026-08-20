@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios'; // Pastikan path ini sesuai dengan struktur folder kamu
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 import { useRouter } from 'next/navigation';
 import BackButton from '../components/BackButton';
 
@@ -220,7 +222,7 @@ export default function CheckoutPage() {
                 <div key={item.id} className="flex gap-4">
                   <div className="w-16 h-16 bg-gray-100 rounded-md border flex items-center justify-center shrink-0 overflow-hidden">
                     {item.product.image_path ? (
-                      <img src={`http://127.0.0.1:8000${item.product.image_path}`} alt={item.product.name} className="w-full h-full object-cover" />
+                      <img src={`${BACKEND_URL}${item.product.image_path}`} alt={item.product.name} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-[10px] text-gray-400">Produk</span>
                     )}

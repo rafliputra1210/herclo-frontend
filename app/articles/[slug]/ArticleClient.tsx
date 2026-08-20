@@ -6,6 +6,8 @@ import Link from 'next/link';
 import api from '../../../lib/axios';
 import PublicHeader from '../../components/PublicHeader';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 interface Article {
   id: number;
   title: string;
@@ -83,7 +85,7 @@ export default function ArticleClient({ slug }: ArticleClientProps) {
         {article.image_path && (
           <div className="w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden mb-12 shadow-md">
             <img 
-              src={`http://127.0.0.1:8000${article.image_path}`} 
+              src={`${BACKEND_URL}${article.image_path}`} 
               alt={article.title}
               className="w-full h-full object-cover"
             />

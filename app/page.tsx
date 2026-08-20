@@ -6,6 +6,8 @@ import Link from 'next/link';
 import PublicHeader from './components/PublicHeader';
 import { useRouter } from 'next/navigation';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 // --- Definisi Tipe Data ---
 interface Product {
   id: number;
@@ -57,8 +59,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
   
-  // --- State untuk Fitur Video Opening Dinamis ---
-  const [useVideoOpening, setUseVideoOpening] = useState(false);
 
   // --- State untuk Modal Varian (Shopee-style) ---
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -110,26 +110,18 @@ export default function Home() {
 
   const fetchPublicData = async () => {
     try {
-      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes, settingsRes] = await Promise.all([
+      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes] = await Promise.all([
         api.get('/products'),
         api.get('/galleries'),
         api.get('/articles'),
         api.get('/testimonials'),
         api.get('/banners'),
-        api.get('/settings').catch(() => ({ data: { data: {} } })), // Mencegah error jika tabel settings belum dimigrasi
       ]);
       setProducts(productsRes.data?.data || productsRes.data || []);
       setGalleries(galleriesRes.data?.data || galleriesRes.data || []);
       setArticles(articlesRes.data?.data || articlesRes.data || []);
       setTestimonials(testimonialsRes.data?.data || testimonialsRes.data || []);
       setBanners(bannersRes.data?.data || bannersRes.data || []);
-      
-      // Menerapkan pengaturan video opening dari database Backend
-      if (settingsRes?.data?.data?.use_video_opening === 'true') {
-        setUseVideoOpening(true);
-      } else {
-        setUseVideoOpening(false);
-      }
     } catch (error) {
       console.error('Gagal memuat data publik:', error);
     } finally {
@@ -174,7 +166,7 @@ export default function Home() {
               <div className="flex gap-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border shrink-0">
                    {selectedProduct.image_path ? (
-                     <img src={`http://127.0.0.1:8000${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                     <img src={`${BACKEND_URL}${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
                    ) : (
                      <span className="text-[10px] text-gray-400">No Image</span>
                    )}
@@ -244,94 +236,69 @@ export default function Home() {
         </div>
       )}
 
-      {/* --- HERO SECTION DINAMIS (VIDEO ATAU BANNER) --- */}
-      {useVideoOpening ? (
-        
-        /* OPSI 1: VIDEO OPENING */
-        <section className="relative w-full h-screen overflow-hidden bg-black flex items-center justify-center">
-          <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60">
-            <source src="/herclo-opening.mp4" type="video/mp4" />
-          </video>
-          <div className="relative z-10 text-center text-white px-6">
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-4 animate-fade-in-up">HERCLO.</h1>
-            <p className="text-sm md:text-lg font-semibold tracking-[0.3em] uppercase text-gray-300 mb-10">Elevate Your Everyday Style</p>
-            <a href="#koleksi" className="inline-block border-2 border-lime-400 text-lime-400 px-10 py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-lime-400 hover:text-black hover:border-lime-400 transition-all">
-              Eksplorasi Koleksi
-            </a>
-          </div>
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-70">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
+      {/* --- HERO SECTION: BANNER SLIDER PROMOSI --- */}
+      {banners.length > 0 ? (
+        <section className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden bg-gray-900">
+          {banners.map((banner, index) => (
+            <div
+              key={banner.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            >
+              <img
+                src={`${BACKEND_URL}${banner.image_path}`}
+                alt={banner.title || 'HERCLO Banner'}
+                className="object-cover w-full h-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-white text-center p-6">
+                {banner.title && (
+                  <h2 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-xl tracking-tight">
+                    {banner.title}
+                  </h2>
+                )}
+                {banner.link_url && (
+                  <a
+                    href={banner.link_url}
+                    className="mt-6 px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors shadow-xl text-sm"
+                  >
+                    Cek Sekarang →
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+          {banners.length > 1 && (
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
+              {banners.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentBanner(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === currentBanner ? 'w-8 bg-lime-400' : 'w-2 bg-white/50 hover:bg-lime-400/80'
+                  }`}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="bg-gray-900 text-white h-[60vh] md:h-[85vh] flex flex-col items-center justify-center text-center px-8">
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
+            Dailywear · Sportwear · Muslimwear
+          </span>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-none">
+            Elevate Your Style.
+          </h1>
+          <p className="text-gray-300 md:text-lg max-w-xl mb-10 leading-relaxed">
+            Temukan koleksi premium HERCLO — dibuat untuk tampil percaya diri setiap hari.
+          </p>
+          <div className="flex gap-4 flex-wrap justify-center">
+            <a href="#koleksi" className="px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors text-sm shadow-lg">Belanja Sekarang</a>
+            <Link href="/gallery" className="px-8 py-3 border border-white text-white font-bold rounded-full hover:border-lime-400 hover:text-lime-400 transition-colors text-sm">Lihat Lookbook</Link>
           </div>
         </section>
-
-      ) : (
-
-        /* OPSI 2: BANNER SLIDER PROMOSI */
-        banners.length > 0 ? (
-          <section className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden bg-gray-900">
-            {banners.map((banner, index) => (
-              <div
-                key={banner.id}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
-              >
-                <img
-                  src={`http://127.0.0.1:8000${banner.image_path}`}
-                  alt={banner.title || 'HERCLO Banner'}
-                  className="object-cover w-full h-full"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex flex-col items-center justify-center text-white text-center p-6">
-                  {banner.title && (
-                    <h2 className="text-4xl md:text-6xl font-black mb-4 drop-shadow-xl tracking-tight">
-                      {banner.title}
-                    </h2>
-                  )}
-                  {banner.link_url && (
-                    <a
-                      href={banner.link_url}
-                      className="mt-6 px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors shadow-xl text-sm"
-                    >
-                      Cek Sekarang →
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
-            {banners.length > 1 && (
-              <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-20">
-                {banners.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentBanner(idx)}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      idx === currentBanner ? 'w-8 bg-lime-400' : 'w-2 bg-white/50 hover:bg-lime-400/80'
-                    }`}
-                    aria-label={`Slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        ) : (
-          <section className="bg-gray-900 text-white h-[60vh] md:h-[85vh] flex flex-col items-center justify-center text-center px-8">
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">
-              Dailywear · Sportwear · Muslimwear
-            </span>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-none">
-              Elevate Your Style.
-            </h1>
-            <p className="text-gray-300 md:text-lg max-w-xl mb-10 leading-relaxed">
-              Temukan koleksi premium HERCLO — dibuat untuk tampil percaya diri setiap hari.
-            </p>
-            <div className="flex gap-4 flex-wrap justify-center">
-              <a href="#koleksi" className="px-8 py-3 bg-lime-400 text-black font-bold rounded-full hover:bg-lime-500 transition-colors text-sm shadow-lg">Belanja Sekarang</a>
-              <Link href="/gallery" className="px-8 py-3 border border-white text-white font-bold rounded-full hover:border-lime-400 hover:text-lime-400 transition-colors text-sm">Lihat Lookbook</Link>
-            </div>
-          </section>
-        )
       )}
 
 
@@ -392,7 +359,7 @@ export default function Home() {
                 <div key={product.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
                   <div className="h-64 bg-gray-100 flex items-center justify-center relative overflow-hidden">
                     {product.image_path ? (
-                      <img src={`http://127.0.0.1:8000${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={`${BACKEND_URL}${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <svg className="w-14 h-14 text-gray-300 group-hover:scale-110 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -439,7 +406,7 @@ export default function Home() {
               {galleries.slice(0, 8).map((img) => (
                 <div key={img.id} className="relative aspect-[3/4] w-2/3 shrink-0 snap-start rounded-2xl overflow-hidden group shadow-sm border border-gray-100 md:w-auto md:shrink">
                   <img
-                    src={img.image_path.startsWith('http') ? img.image_path : `http://127.0.0.1:8000${img.image_path}`}
+                    src={img.image_path.startsWith('http') ? img.image_path : `${BACKEND_URL}${img.image_path}`}
                     alt={img.title}
                     className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
                   />

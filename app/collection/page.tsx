@@ -3,6 +3,8 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '../../lib/axios';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 import PublicHeader from '../components/PublicHeader';
 
 interface Category { id: number; name: string; }
@@ -94,7 +96,7 @@ function CollectionContent() {
               <div className="flex gap-4">
                 <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border">
                    {selectedProduct.image_path ? (
-                     <img src={`http://127.0.0.1:8000${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                     <img src={`${BACKEND_URL}${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
                    ) : (
                      <span className="text-xs text-gray-400">Produk</span>
                    )}
@@ -235,7 +237,7 @@ function CollectionContent() {
                 <div key={product.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
                   <div className="h-64 bg-gray-100 flex items-center justify-center overflow-hidden">
                     {product.image_path ? (
-                      <img src={`http://127.0.0.1:8000${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={`${BACKEND_URL}${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <span className="text-gray-400">Gambar Produk</span>
                     )}
