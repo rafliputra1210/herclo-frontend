@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/axios';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function ArticleClient() {
   const { slug } = useParams();
   const router = useRouter();
@@ -31,7 +33,7 @@ export default function ArticleClient() {
       <header className="relative w-full h-[60vh] bg-gray-100 flex items-end justify-center overflow-hidden">
         {article.image_path ? (
           <img 
-            src={`http://127.0.0.1:8000${article.image_path}`} 
+            src={`${BACKEND_URL}${article.image_path}`} 
             alt={article.title} 
             className="absolute inset-0 w-full h-full object-cover"
           />

@@ -14,6 +14,8 @@ interface Article {
   created_at: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function ArticlesPage() {
                 <div className="relative h-52 bg-gray-100 overflow-hidden">
                   {article.image_path ? (
                     <img
-                      src={`http://127.0.0.1:8000${article.image_path}`}
+                      src={`${BACKEND_URL}${article.image_path}`}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

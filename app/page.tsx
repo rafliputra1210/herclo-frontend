@@ -125,9 +125,9 @@ export default function Home() {
         <section className="relative w-full h-[75vh] md:h-[92vh] overflow-hidden bg-black">
           {heroBanners.map((banner, index) => (
             <div key={banner.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={`${BACKEND_URL}${banner.image_path}`} alt={banner.title} className="object-cover w-full h-full opacity-65 scale-105 transition-transform duration-10000" />
+              <img src={`${BACKEND_URL}${banner.image_path}`} alt={banner.title} className="object-cover w-full h-full scale-105 transition-transform duration-10000" />
               
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/20 flex flex-col items-center justify-center text-white text-center px-6">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
                 <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-6">
                   HERCLO Premium Apparel
                 </span>
@@ -388,7 +388,7 @@ export default function Home() {
             <img 
               src={subBanners[0].image_path.startsWith('http') ? subBanners[0].image_path : `${BACKEND_URL}${subBanners[0].image_path}`} 
               alt={subBanners[0].title || "HERCLO Sub Banner"} 
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 opacity-90" 
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
             />
           ) : (
             <img 
@@ -398,7 +398,7 @@ export default function Home() {
             />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent flex flex-col justify-end p-6 sm:p-10 md:p-14">
+          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10 md:p-14">
             <span className="text-lime-400 text-xs font-black uppercase tracking-[0.3em] mb-2">HERCLO Campaign 2026</span>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none mb-4">
               {subBanners.length > 0 && subBanners[0].title ? subBanners[0].title : "Urban Streetwear Collection"}
@@ -435,35 +435,6 @@ export default function Home() {
             </div>
           </motion.section>
         )}
-
-        {/* --- NEWSLETTER INSIDER SECTION --- */}
-        <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="bg-black text-white rounded-3xl p-8 md:p-14 text-center relative overflow-hidden border border-white/10">
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-lime-400/20 rounded-full blur-3xl pointer-events-none"></div>
-          <span className="text-lime-400 text-xs font-black uppercase tracking-[0.3em] mb-3 block">HERCLO Insider</span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter uppercase mb-4">
-            Dapatkan Voucher Diskon 10%
-          </h2>
-          <p className="text-gray-400 text-xs md:text-sm font-medium max-w-xl mx-auto mb-8">
-            Daftarkan email Anda untuk mendapatkan kabar rilis produk terbatas, promo eksklusif, dan penawaran khusus Herclo.
-          </p>
-          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input 
-              type="email" 
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="Masukkan alamat email Anda..." 
-              required
-              className="flex-1 bg-white/10 border border-white/20 px-5 py-3.5 rounded-full text-xs font-medium focus:outline-none focus:border-lime-400 text-white placeholder:text-gray-500"
-            />
-            <button 
-              type="submit"
-              className="px-8 py-3.5 bg-lime-400 text-black font-black uppercase text-xs tracking-widest rounded-full hover:bg-white transition-all shadow-md shrink-0"
-            >
-              Langganan
-            </button>
-          </form>
-        </motion.section>
-
         {/* --- SECTION ARTIKEL / JOURNAL (3 GRID CARD) --- */}
         {articles.length > 0 && (
           <motion.section 

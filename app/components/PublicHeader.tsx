@@ -46,9 +46,10 @@ export default function PublicHeader() {
         {/* METODE NAVIGASI LENGKAP PADA DESKTOP */}
         <nav className="hidden md:flex items-center gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-gray-700">
           <Link href="/" className={`hover:text-lime-500 transition-colors ${pathname === '/' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Beranda</Link>
-          <Link href="/collection" className={`hover:text-lime-500 transition-colors ${pathname === '/collection' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Koleksi</Link>
-          <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Lookbook</Link>
-          <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Journal</Link>
+          <Link href="/collection" className={`hover:text-lime-500 transition-colors ${pathname === '/collection' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Produk</Link>
+          <Link href="/profile" className={`hover:text-lime-500 transition-colors ${pathname === '/profile' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Profil</Link>
+          <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Galeri</Link>
+          <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Artikel</Link>
           <Link href="/testimonials" className={`hover:text-lime-500 transition-colors ${pathname === '/testimonials' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Testimoni</Link>
           <Link href="/faq" className={`hover:text-lime-500 transition-colors ${pathname === '/faq' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>FAQ</Link>
           <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Kontak</Link>
@@ -151,6 +152,10 @@ export default function PublicHeader() {
                   <div className="px-3 pb-1">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Eksplorasi HERCLO</p>
                   </div>
+                  <Link href="/profile" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
+                    <svg className="w-5 h-5 text-slate-450" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                    Tentang Kami
+                  </Link>
                   <Link href="/gallery" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
                     <svg className="w-5 h-5 text-slate-450" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     Lookbook & Galeri
