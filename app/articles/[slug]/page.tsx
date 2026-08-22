@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/axios';
 
-export default function ArticleClient() {
+export default function SingleArticlePage() {
   const { slug } = useParams();
   const router = useRouter();
   const [article, setArticle] = useState<any>(null);

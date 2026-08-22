@@ -12,7 +12,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:800
 // --- Definisi Tipe Data ---
 interface Product { id: number; name: string; price: string | number; stock_quantity?: number; description?: string; image_path?: string; category?: { name: string; }; }
 interface Gallery { id: number; title: string; category: string; image_path: string; }
-interface Article { id: number; title: string; slug: string; content: string; created_at: string; }
+interface Article { id: number; title: string; slug: string; content: string; image_path?: string; created_at: string; }
 interface Testimonial { id: number; customer_name: string; content: string; rating: number; is_featured: boolean; }
 interface Banner { id: number; title: string; image_path: string; link_url: string; is_active: boolean; type?: 'hero' | 'sub'; }
 
@@ -463,6 +463,79 @@ export default function Home() {
             </button>
           </form>
         </motion.section>
+
+        {/* --- SECTION ARTIKEL / JOURNAL (3 GRID CARD) --- */}
+        {articles.length > 0 && (
+          <motion.section 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true }} 
+            variants={fadeUp} 
+            className="pt-4"
+          >
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 border-b border-gray-200 pb-4">
+              <div>
+                <span className="text-lime-600 text-xs font-black uppercase tracking-[0.3em] block mb-1">
+                  HERCLO JOURNAL
+                </span>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-black">
+                  Artikel & Tips Style<span className="text-lime-500">.</span>
+                </h2>
+              </div>
+              <Link 
+                href="/articles" 
+                className="text-xs md:text-sm font-black text-gray-500 hover:text-black transition-colors uppercase tracking-widest mt-2 md:mt-0"
+              >
+                Lihat Semua Artikel ↗
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {articles.slice(0, 3).map((article) => (
+                <div 
+                  key={article.id} 
+                  className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col group"
+                >
+                  <div className="relative h-48 bg-gray-100 overflow-hidden">
+                    {article.image_path ? (
+                      <img 
+                        src={article.image_path.startsWith('http') ? article.image_path : `${BACKEND_URL}${article.image_path}`} 
+                        alt={article.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-black text-2xl text-gray-300">
+                        HERCLO
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-2">
+                        {new Date(article.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      </p>
+                      <h3 className="text-lg font-black text-black mb-2 line-clamp-2 leading-snug group-hover:text-lime-600 transition-colors">
+                        <Link href={`/articles/${article.slug}`}>{article.title}</Link>
+                      </h3>
+                      <p className="text-gray-500 text-xs line-clamp-3 leading-relaxed mb-4">
+                        {article.content}
+                      </p>
+                    </div>
+
+                    <Link 
+                      href={`/articles/${article.slug}`} 
+                      className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-black hover:text-lime-600 transition-colors"
+                    >
+                      <span>Baca Selengkapnya</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
 
       </div>
 

@@ -8,6 +8,7 @@ interface Article {
   title: string;
   slug: string;
   content: string;
+  image_path?: string; // Menambahkan kolom image
   is_published: boolean;
   created_at: string;
 }
@@ -20,6 +21,10 @@ export default function ArticleManagement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ title: '', content: '' });
+  
+  // State khusus untuk menampung file gambar
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchArticles = async () => {
@@ -44,12 +49,14 @@ export default function ArticleManagement() {
   const handleAddClick = () => {
     setEditingId(null);
     setFormData({ title: '', content: '' });
+    setImageFile(null); // Reset gambar
     setIsFormOpen(!isFormOpen);
   };
 
   const handleEditClick = (article: Article) => {
     setEditingId(article.id);
     setFormData({ title: article.title, content: article.content });
+    setImageFile(null); // Kosongkan state file (tidak me-load file lama)
     setIsFormOpen(true);
   };
 
@@ -57,19 +64,35 @@ export default function ArticleManagement() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    // Gunakan FormData karena kita mengirim file (bukan JSON biasa)
+    const submitData = new FormData();
+    submitData.append('title', formData.title);
+    submitData.append('content', formData.content);
+    
+    // Masukkan gambar jika admin memilih file
+    if (imageFile) {
+      submitData.append('image', imageFile);
+    }
+    
     try {
       if (editingId) {
-        await api.put(`/admin/articles/${editingId}`, formData);
+        // Trik Laravel: Update file harus pakai POST dan ditambahkan _method = PUT
+        submitData.append('_method', 'PUT');
+        await api.post(`/admin/articles/${editingId}`, submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Artikel berhasil diperbarui!');
       } else {
-        await api.post('/admin/articles', formData);
+        await api.post('/admin/articles', submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Artikel berhasil diterbitkan!');
       }
       setIsFormOpen(false);
       fetchArticles();
     } catch (error: any) {
       console.error('Gagal simpan artikel:', error);
-      alert('Gagal menyimpan artikel.');
+      alert('Gagal menyimpan artikel. Pastikan ukuran gambar tidak terlalu besar.');
     } finally {
       setIsSubmitting(false);
     }
@@ -120,6 +143,21 @@ export default function ArticleManagement() {
                 placeholder="Contoh: 5 Tips Mix & Match Oversized Tee"
               />
             </div>
+            
+            {/* TAMBAHAN INPUT UNTUK FOTO/GAMBAR */}
+            <div>
+              <label className="block text-sm font-medium mb-1">Gambar Utama (Thumbnail)</label>
+              <input 
+                type="file" 
+                accept="image/png, image/jpeg, image/jpg, image/webp"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                className="w-full border p-2 rounded bg-white text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Format: JPG, PNG, WEBP. Maksimal 3MB. {editingId && '(Kosongkan jika tidak ingin mengubah gambar)'}
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">Konten Artikel</label>
               <textarea 
@@ -135,7 +173,7 @@ export default function ArticleManagement() {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full bg-black text-white py-2 rounded font-medium mt-2 disabled:bg-gray-400"
+              className="w-full bg-black text-white py-3 rounded-lg font-medium mt-2 disabled:bg-gray-400"
             >
               {isSubmitting ? 'Menyimpan...' : (editingId ? 'Simpan Perubahan' : 'Terbitkan Artikel')}
             </button>
@@ -150,7 +188,7 @@ export default function ArticleManagement() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-sm">
-                <th className="p-4 font-semibold text-gray-600 w-16">ID</th>
+                <th className="p-4 font-semibold text-gray-600 w-16">Foto</th>
                 <th className="p-4 font-semibold text-gray-600">Judul Artikel</th>
                 <th className="p-4 font-semibold text-gray-600">Tanggal Dibuat</th>
                 <th className="p-4 font-semibold text-gray-600 text-right">Aksi</th>
@@ -164,7 +202,17 @@ export default function ArticleManagement() {
               ) : (
                 articles.map((article) => (
                   <tr key={article.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="p-4 text-gray-500">{article.id}</td>
+                    <td className="p-4 text-gray-500">
+                      {article.image_path ? (
+                        <div className="w-12 h-12 rounded bg-gray-100 overflow-hidden">
+                          <img src={`http://127.0.0.1:8000${article.image_path}`} alt="Thumb" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-400">
+                          No Pic
+                        </div>
+                      )}
+                    </td>
                     <td className="p-4 font-medium text-gray-900">
                       {article.title}
                       <span className="block text-xs text-gray-400 mt-1">/blog/{article.slug}</span>
@@ -175,13 +223,13 @@ export default function ArticleManagement() {
                     <td className="p-4 text-right">
                       <button 
                         onClick={() => handleEditClick(article)}
-                        className="text-blue-600 hover:underline mr-3 text-sm"
+                        className="text-blue-600 hover:underline mr-3 text-sm font-medium"
                       >
                         Edit
                       </button>
                       <button 
                         onClick={() => handleDelete(article.id)}
-                        className="text-red-600 hover:underline text-sm"
+                        className="text-red-600 hover:underline text-sm font-medium"
                       >
                         Hapus
                       </button>
