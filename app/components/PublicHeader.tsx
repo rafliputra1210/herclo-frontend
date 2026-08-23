@@ -21,7 +21,7 @@ export default function PublicHeader() {
 
   return (
     <>
-      <header className="bg-white border-b px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xs">
+      <header className="bg-black border-b border-zinc-800 px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xs">
         <div className="flex items-center gap-3 md:gap-6">
           {pathname !== '/' && (
             <BackButton label="" className="p-2!" />
@@ -30,7 +30,7 @@ export default function PublicHeader() {
           {/* Tombol Hamburger (Khusus Mobile) */}
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            className="md:hidden text-gray-900 hover:bg-gray-100 p-2 rounded-lg transition-colors focus:outline-none"
+            className="md:hidden text-white hover:bg-zinc-800 p-2 rounded-lg transition-colors focus:outline-none"
             aria-label="Buka Menu Utama"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -39,20 +39,20 @@ export default function PublicHeader() {
           </button>
           
           <Link href="/" className="flex items-center shrink-0">
-            <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-9 md:h-10 w-auto object-contain" />
+            <img src="/LOGO HERCLO3.PNG" alt="HERCLO" className="h-9 md:h-10 w-auto object-contain" />
           </Link>
         </div>
 
         {/* METODE NAVIGASI LENGKAP PADA DESKTOP */}
-        <nav className="hidden md:flex items-center gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-gray-700">
-          <Link href="/" className={`hover:text-lime-500 transition-colors ${pathname === '/' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Beranda</Link>
-          <Link href="/collection" className={`hover:text-lime-500 transition-colors ${pathname === '/collection' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Produk</Link>
-          <Link href="/profile" className={`hover:text-lime-500 transition-colors ${pathname === '/profile' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Profil</Link>
-          <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Galeri</Link>
-          <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Artikel</Link>
-          <Link href="/testimonials" className={`hover:text-lime-500 transition-colors ${pathname === '/testimonials' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Testimoni</Link>
-          <Link href="/faq" className={`hover:text-lime-500 transition-colors ${pathname === '/faq' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>FAQ</Link>
-          <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-black font-black underline underline-offset-4 decoration-lime-400' : ''}`}>Kontak</Link>
+        <nav className="hidden md:flex items-center gap-5 lg:gap-7 text-xs lg:text-sm font-bold text-white">
+          <Link href="/" className={`hover:text-lime-500 transition-colors ${pathname === '/' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Beranda</Link>
+          <Link href="/collection" className={`hover:text-lime-500 transition-colors ${pathname === '/collection' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Produk</Link>
+          <Link href="/profile" className={`hover:text-lime-500 transition-colors ${pathname === '/profile' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Profil</Link>
+          <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Galeri</Link>
+          <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Artikel</Link>
+          <Link href="/testimonials" className={`hover:text-lime-500 transition-colors ${pathname === '/testimonials' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Testimoni</Link>
+          <Link href="/faq" className={`hover:text-lime-500 transition-colors ${pathname === '/faq' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>FAQ</Link>
+          <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Kontak</Link>
         </nav>
         
         {/* KOLOM PENCARIAN & FITUR KANAN DESKTOP */}
@@ -63,16 +63,16 @@ export default function PublicHeader() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari..." 
-              className="w-full bg-gray-100 border-none rounded-full py-1.5 pl-4 pr-10 text-xs focus:ring-2 focus:ring-lime-400 outline-none transition-all"
+              className="w-full bg-zinc-800 border-none rounded-full py-1.5 pl-4 pr-10 text-xs focus:ring-2 focus:ring-lime-400 outline-none transition-all text-white placeholder-zinc-400"
             />
-            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-lime-500">
+            <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-lime-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
             </button>
           </form>
 
-          <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative" title="Keranjang Belanja">
+          <Link href="/cart" className="p-2 hover:bg-zinc-800 rounded-full transition-colors relative" title="Keranjang Belanja">
             <span className="text-lg">🛒</span>
           </Link>
 

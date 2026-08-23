@@ -112,6 +112,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/products" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/products')}`}>
             <span className="text-lg">👕</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Produk</span>
           </Link>
+          <Link href="/admin/scanner" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/scanner')}`}>
+            <span className="text-lg">📷</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Scanner Stok</span>
+          </Link>
           <Link href="/admin/categories" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/categories')}`}>
             <span className="text-lg">📁</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Kategori</span>
           </Link>
@@ -139,6 +142,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
 
           <div className={`text-[11px] text-gray-400 font-bold uppercase tracking-widest mb-3 mt-8 px-3 ${!isSidebarOpen && 'hidden'}`}>Konten & Laporan</div>
+          <Link href="/admin/company-profile" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/company-profile')}`}>
+            <span className="text-lg">🏢</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Profil Perusahaan</span>
+          </Link>
           <Link href="/admin/gallery" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/gallery')}`}>
             <span className="text-lg">📸</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Galeri Foto</span>
           </Link>
@@ -147,6 +153,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
           <Link href="/admin/testimonials" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/testimonials')}`}>
             <span className="text-lg">⭐</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Testimoni</span>
+          </Link>
+          <Link href="/admin/team" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/team')}`}>
+            <span className="text-lg">🧑‍🤝‍🧑</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Tim Kami</span>
           </Link>
           <Link href="/admin/reports" className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive('/admin/reports')}`}>
             <span className="text-lg">📈</span> <span className={!isSidebarOpen ? 'hidden' : ''}>Laporan</span>

@@ -2,25 +2,41 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import api from '../../lib/axios';
+
+interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  image_path?: string;
+}
+
+interface CompanyProfile {
+  title: string;
+  description: string;
+  image_path?: string;
+}
 
 export default function ProfilePage() {
-  const teamMembers = [
-    {
-      name: 'Rafli Putra',
-      role: 'Founder & Creative Director',
-      image: '/team-1.jpg', // Siapkan foto di folder public
-    },
-    {
-      name: 'Amanda Larasati',
-      role: 'Head of Operations',
-      image: '/team-2.jpg', 
-    },
-    {
-      name: 'Bima Sena',
-      role: 'Lead Fashion Designer',
-      image: '/team-3.jpg', 
-    }
-  ];
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [profile, setProfile] = useState<CompanyProfile | null>(null);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const [teamRes, profileRes] = await Promise.all([
+          api.get('/team'),
+          api.get('/company-profile')
+        ]);
+        setTeamMembers(teamRes.data.data);
+        setProfile(profileRes.data.data);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+    fetchProfileData();
+  }, []);
 
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900 selection:bg-emerald-500 selection:text-white pb-0">
@@ -32,24 +48,29 @@ export default function ProfilePage() {
             Kisah Kami — Est. 2026
           </p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[1.1]">
-            Mendefinisikan <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-400">
-              Ulang Gaya.
-            </span>
+            {profile?.title || 'Mendefinisikan Ulang Gaya.'}
           </h1>
-          <h2 className="text-xl md:text-2xl font-medium text-gray-600 max-w-lg leading-relaxed">
-            Berawal dari sebuah studio kecil di Surabaya, HERCLO hadir untuk mendobrak batasan antara kenyamanan harian dan estetika premium.
+          <h2 className="text-xl md:text-2xl font-medium text-gray-600 max-w-lg leading-relaxed whitespace-pre-line">
+            {profile?.description || 'Berawal dari sebuah studio kecil di Surabaya, HERCLO hadir untuk mendobrak batasan antara kenyamanan harian dan estetika premium.'}
           </h2>
         </div>
 
         <div className="flex-1 w-full relative">
           <div className="aspect-[4/5] md:aspect-square relative rounded-3xl overflow-hidden shadow-2xl group">
-            <Image 
-              src="/profile-hero.jpg" // Pastikan ada file profile-hero.jpg di public
-              alt="HERCLO Studio" 
-              fill
-              className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 ease-in-out transform group-hover:scale-105"
-            />
+            {profile?.image_path ? (
+              <img 
+                src={`http://127.0.0.1:8000${profile.image_path}`} 
+                alt="HERCLO Studio" 
+                className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform group-hover:scale-105"
+              />
+            ) : (
+              <Image 
+                src="/profile-hero.jpg" 
+                alt="HERCLO Studio" 
+                fill
+                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 ease-in-out transform group-hover:scale-105"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-1000"></div>
           </div>
           {/* Ambient Glow / Pencahayaan Sinematik di belakang foto */}
@@ -90,17 +111,20 @@ export default function ProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="group cursor-pointer">
+            {teamMembers.map((member) => (
+              <div key={member.id} className="group cursor-pointer">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 shadow-lg bg-gray-200">
-                  <Image 
-                    src={member.image} 
-                    alt={member.name}
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-105"
-                  />
-                  {/* Efek gradient bawah agar teks bisa ditambahkan di atas foto jika perlu */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  {member.image_path ? (
+                    <img 
+                      src={`http://127.0.0.1:8000${member.image_path}`} 
+                      alt={member.name}
+                      className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500">
+                      No Image
+                    </div>
+                  )}
                 </div>
                 <div className="text-center">
                   <h4 className="text-xl font-bold text-gray-900">{member.name}</h4>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
-
+import Barcode from 'react-barcode';
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Category {
@@ -23,6 +23,8 @@ interface Product {
 
 export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [printProduct, setPrintProduct] = useState<any | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -312,8 +314,15 @@ export default function ProductManagement() {
                     <td className="p-4 text-gray-600 text-sm">{product.category?.name || '-'}</td>
                     <td className="p-4 text-gray-900 font-medium">Rp {new Intl.NumberFormat('id-ID').format(Number(product.price))}</td>
                     <td className="p-4 text-gray-600 text-sm">{product.stock_quantity}</td>
-                    <td className="p-4 text-right">
-                      <button onClick={() => handleEditClick(product)} className="text-blue-600 hover:underline mr-3 text-sm font-medium">Edit</button>
+                    <td className="p-4 text-right space-x-3">
+                      {/* Tombol Cetak Hangtag */}
+                      <button 
+                        onClick={() => setPrintProduct(product)}
+                        className="text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded text-xs font-bold transition-colors"
+                      >
+                        Cetak Hangtag
+                      </button>
+                      <button onClick={() => handleEditClick(product)} className="text-blue-600 hover:underline text-sm font-medium">Edit</button>
                       <button onClick={() => handleDelete(product.id)} className="text-red-600 hover:underline text-sm font-medium">Hapus</button>
                     </td>
                   </tr>
@@ -323,6 +332,109 @@ export default function ProductManagement() {
           </table>
         )}
       </div>
+
+      {/* ================= MODAL CETAK STIKER BARCODE ================= */}
+      {printProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm print:bg-white print:backdrop-blur-none">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl relative flex flex-col items-center print:shadow-none print:p-0">
+            <button 
+              onClick={() => { setPrintProduct(null); setSelectedVariant(null); }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-black font-bold print:hidden"
+            >
+              ✕ Tutup
+            </button>
+
+            <h3 className="font-bold text-lg mb-4 print:hidden">Pilih Varian untuk Dicetak</h3>
+
+            {/* Daftar Varian (Sembunyi saat diprint) */}
+            <div className="space-y-2 mb-6 w-full max-h-48 overflow-y-auto print:hidden">
+              {printProduct.variants && printProduct.variants.length > 0 ? (
+                printProduct.variants.map((variant: any) => (
+                  <button 
+                    key={variant.id}
+                    onClick={() => setSelectedVariant(variant)}
+                    className={`w-full text-left px-4 py-2 border rounded transition-colors flex justify-between items-center ${selectedVariant?.id === variant.id ? 'border-black bg-gray-50' : 'hover:bg-gray-50'}`}
+                  >
+                    <span className="font-medium text-sm">{variant.color} - {variant.size} (Stok: {variant.stock_quantity})</span>
+                    <span className="font-mono text-xs text-gray-500">{variant.sku}</span>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-2">Produk ini tidak memiliki varian.</p>
+              )}
+            </div>
+
+            {/* AREA DESAIN STIKER (Hanya tampil jika varian sudah dipilih atau jika tidak punya varian kita cetak barcode produk utama) */}
+            {selectedVariant ? (
+              <div id="hangtag-area" className="w-[6cm] h-[3.5cm] bg-white border border-dashed border-gray-300 print:border-none flex flex-col justify-center px-3 py-2 text-black">
+                <p className="text-[11px] font-medium leading-tight truncate">{printProduct.name}</p>
+                <p className="text-[10px] font-medium leading-tight mb-2">
+                  {selectedVariant.color}: {selectedVariant.size} &nbsp; Rp {new Intl.NumberFormat('id-ID').format(printProduct.price)}
+                </p>
+                <div className="flex justify-center">
+                  <Barcode 
+                    value={selectedVariant.sku} 
+                    width={1.4}
+                    height={35}
+                    fontSize={10}
+                    margin={0}
+                    background="#ffffff"
+                    lineColor="#000000"
+                  />
+                </div>
+              </div>
+            ) : (
+              (!printProduct.variants || printProduct.variants.length === 0) ? (
+                <div id="hangtag-area" className="w-[6cm] h-[3.5cm] bg-white border border-dashed border-gray-300 print:border-none flex flex-col justify-center px-3 py-2 text-black">
+                  <p className="text-[11px] font-medium leading-tight truncate">{printProduct.name}</p>
+                  <p className="text-[10px] font-medium leading-tight mb-2">
+                    Rp {new Intl.NumberFormat('id-ID').format(printProduct.price)}
+                  </p>
+                  <div className="flex justify-center">
+                    <Barcode 
+                      value={`2026${String(printProduct.id).padStart(4, '0')}`} 
+                      width={1.4}
+                      height={35}
+                      fontSize={10}
+                      margin={0}
+                      background="#ffffff"
+                      lineColor="#000000"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 print:hidden">Silakan pilih varian terlebih dahulu untuk menampilkan barcode.</p>
+              )
+            )}
+
+            {(selectedVariant || (!printProduct.variants || printProduct.variants.length === 0)) && (
+              <button 
+                onClick={() => window.print()}
+                className="mt-6 bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 transition-colors flex gap-2 items-center print:hidden"
+              >
+                <span>🖨️</span> Cetak ke Printer Thermal
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* CSS Khusus Print (Pastikan ini tetap ada di bagian paling bawah) */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #hangtag-area, #hangtag-area * {
+            visibility: visible;
+          }
+          #hangtag-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+          }
+        }
+      `}} />
     </div>
   );
 }
