@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 const MAX_BANNERS = 10;
@@ -16,6 +17,7 @@ interface Banner {
 }
 
 export default function BannerManagement() {
+  const { confirm } = useConfirm();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -121,7 +123,15 @@ export default function BannerManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Yakin ingin menghapus banner ini secara permanen?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Banner',
+      message: 'Apakah Anda yakin ingin menghapus banner ini secara permanen? Tindakan ini tidak dapat dibatalkan.',
+      confirmText: 'Hapus Banner',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/banners/${id}`);
         fetchBanners();

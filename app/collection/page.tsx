@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import api from '../../lib/axios';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import PublicHeader from '../components/PublicHeader';
@@ -320,9 +321,10 @@ function CollectionContent() {
 
           {/* GRID KONTEN PRODUK */}
           {loading ? (
-             <div className="flex flex-col justify-center items-center py-32 gap-4">
-               <div className="w-10 h-10 border-4 border-gray-100 border-t-lime-400 rounded-full animate-spin"></div>
-               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mengambil Data...</span>
+             <div className="flex flex-col justify-center items-center py-24 gap-4">
+               <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-10 w-auto object-contain animate-pulse mb-1 brightness-0" />
+               <div className="w-8 h-8 border-3 border-gray-100 border-t-black rounded-full animate-spin"></div>
+               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Mengambil Data Katalog...</span>
              </div>
           ) : products.length === 0 ? (
             <div className="text-center py-32 bg-gray-50 border border-gray-100">
@@ -411,7 +413,9 @@ function CollectionContent() {
       {/* --- FOOTER --- */}
       <footer className="bg-black text-white py-12 border-t-2 border-lime-400 text-center mt-12">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-black tracking-tighter text-white hover:text-lime-400 transition-colors">HERCLO.</h2>
+          <Link href="/" className="inline-block">
+            <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-9 md:h-10 w-auto object-contain mx-auto" />
+          </Link>
           <p className="text-gray-500 text-[10px] font-bold tracking-widest uppercase mt-4">
             &copy; {new Date().getFullYear()} HERCLO OFFICIAL. ALL RIGHTS RESERVED.
           </p>

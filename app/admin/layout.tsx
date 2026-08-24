@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
 import BackButton from '../components/BackButton';
+import { ConfirmProvider } from '../components/ConfirmContext';
 
 interface User {
   id: number;
@@ -77,7 +78,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA] font-sans overflow-hidden text-gray-900">
+    <ConfirmProvider>
+      <div className="flex h-screen bg-[#F8F9FA] font-sans overflow-hidden text-gray-900">
       {/* Sidebar - Tampilan Modern & Clean */}
       <aside className={`bg-white border-r border-gray-100 flex flex-col transition-all duration-300 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] ${isSidebarOpen ? 'w-72' : 'w-20'}`}>
         <div className="h-20 flex items-center justify-between px-6 border-b border-gray-50">
@@ -212,5 +214,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </main>
     </div>
+    </ConfirmProvider>
   );
 }

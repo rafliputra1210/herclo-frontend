@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 interface Testimonial {
   id: number;
@@ -12,6 +13,7 @@ interface Testimonial {
 }
 
 export default function TestimonialManagement() {
+  const { confirm } = useConfirm();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -86,7 +88,15 @@ export default function TestimonialManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus testimoni ini?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Testimoni',
+      message: 'Apakah Anda yakin ingin menghapus testimoni ini? Ulasan ini tidak akan tampil lagi di halaman utama.',
+      confirmText: 'Hapus Testimoni',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/testimonials/${id}`);
         fetchTestimonials();

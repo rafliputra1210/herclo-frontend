@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
 import Barcode from 'react-barcode';
+import { useConfirm } from '../../components/ConfirmContext';
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Category {
@@ -24,6 +25,7 @@ interface Product {
 }
 
 export default function ProductManagement() {
+  const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [printProduct, setPrintProduct] = useState<any | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
@@ -166,7 +168,15 @@ export default function ProductManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Yakin ingin menghapus produk ini?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Produk',
+      message: 'Apakah Anda yakin ingin menghapus produk ini? Semua data varian dan stok terkait juga akan terhapus.',
+      confirmText: 'Hapus Produk',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/products/${id}`);
         fetchData();

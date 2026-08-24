@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 interface Promo {
   id: number;
@@ -13,6 +14,7 @@ interface Promo {
 }
 
 export default function AdminPromoPage() {
+  const { confirm } = useConfirm();
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -59,7 +61,15 @@ export default function AdminPromoPage() {
   };
 
   const handleDelete = async (id: number, code: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus kode promo ${code}?`)) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Kode Promo',
+      message: `Apakah Anda yakin ingin menghapus kode promo "${code}"? Pelanggan tidak akan dapat menggunakan kode promo ini lagi.`,
+      confirmText: 'Hapus Promo',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/promos/${id}`);
         fetchPromos();

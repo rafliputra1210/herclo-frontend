@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 interface Article {
   id: number;
@@ -14,6 +15,7 @@ interface Article {
 }
 
 export default function ArticleManagement() {
+  const { confirm } = useConfirm();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -99,7 +101,15 @@ export default function ArticleManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus artikel ini?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Artikel',
+      message: 'Apakah Anda yakin ingin menghapus artikel ini? Artikel yang sudah dihapus tidak dapat dipulihkan.',
+      confirmText: 'Hapus Artikel',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/articles/${id}`);
         fetchArticles();

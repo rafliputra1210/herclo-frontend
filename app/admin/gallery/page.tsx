@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
@@ -13,6 +14,7 @@ interface Gallery {
 }
 
 export default function GalleryManagement() {
+  const { confirm } = useConfirm();
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -75,7 +77,15 @@ export default function GalleryManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Yakin ingin menghapus gambar ini?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Gambar Galeri',
+      message: 'Yakin ingin menghapus gambar ini dari galeri?',
+      confirmText: 'Hapus Gambar',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/galleries/${id}`);
         fetchGalleries();

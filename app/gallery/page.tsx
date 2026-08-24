@@ -149,7 +149,9 @@ export default function PublicGallery() {
       {/* --- FOOTER --- */}
       <footer className="bg-black text-white py-12 border-t-2 border-lime-400 text-center">
         <div className="max-w-7xl mx-auto px-6">
-          <Link href="/" className="text-3xl font-black tracking-tighter text-white hover:text-lime-400 transition-colors">HERCLO.</Link>
+          <Link href="/" className="inline-block">
+            <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-9 md:h-10 w-auto object-contain mx-auto" />
+          </Link>
           <p className="text-gray-500 text-xs font-bold tracking-widest uppercase mt-4">
             &copy; {new Date().getFullYear()} HERCLO OFFICIAL. ALL RIGHTS RESERVED.
           </p>

@@ -60,20 +60,19 @@ export default function Home() {
   };
 
   const fetchPublicData = async () => {
-    try {
-      const [productsRes, galleriesRes, articlesRes, testimonialsRes, bannersRes] = await Promise.all([
-        api.get('/products'), api.get('/galleries'), api.get('/articles'), api.get('/testimonials'), api.get('/banners'),
-      ]);
-      setProducts(productsRes.data?.data || productsRes.data || []);
-      setGalleries(galleriesRes.data?.data || galleriesRes.data || []);
-      setArticles(articlesRes.data?.data || articlesRes.data || []);
-      setTestimonials(testimonialsRes.data?.data || testimonialsRes.data || []);
-      setBanners(bannersRes.data?.data || bannersRes.data || []);
-    } catch (error) {
-      console.error('Gagal memuat data publik:', error);
-    } finally {
-      setLoading(false);
-    }
+    // Fast parallel fetch without blocking loading screen for too long
+    const fetchPromises = Promise.allSettled([
+      api.get('/products').then(res => setProducts(res.data?.data || res.data || [])),
+      api.get('/banners').then(res => setBanners(res.data?.data || res.data || [])),
+      api.get('/galleries').then(res => setGalleries(res.data?.data || res.data || [])),
+      api.get('/articles').then(res => setArticles(res.data?.data || res.data || [])),
+      api.get('/testimonials').then(res => setTestimonials(res.data?.data || res.data || [])),
+    ]);
+
+    // Fast loading duration cap (max 200ms)
+    const timer = new Promise(resolve => setTimeout(resolve, 200));
+    await Promise.race([fetchPromises, timer]);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -105,11 +104,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white gap-4">
-        <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-4xl font-black tracking-tighter text-white">
-          HERCLO<span className="text-lime-400">.</span>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white gap-5">
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
+          <img src="/LOGO HERCLO5.png" alt="HERCLO" className="h-12 md:h-16 w-auto object-contain animate-pulse mb-2" />
         </motion.div>
-        <div className="w-8 h-8 border-2 border-white/20 border-t-lime-400 rounded-full animate-spin"></div>
+        <div className="w-7 h-7 border-2 border-white/20 border-t-lime-400 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -515,7 +514,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div>
-              <h2 className="text-4xl font-black tracking-tighter text-white mb-4">HERCLO<span className="text-lime-400">.</span></h2>
+              <Link href="/">
+                <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-10 md:h-12 w-auto object-contain mb-4 cursor-pointer" />
+              </Link>
               <p className="text-gray-400 text-xs md:text-sm leading-relaxed font-medium">
                 Mendefinisikan ulang batas kenyamanan dan gaya. Premium streetwear & daily wear untuk mereka yang berani tampil beda.
               </p>

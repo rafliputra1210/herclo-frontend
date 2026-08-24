@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { useConfirm } from '../../components/ConfirmContext';
 
 interface TeamMember {
   id: number;
@@ -11,6 +12,7 @@ interface TeamMember {
 }
 
 export default function AdminTeamPage() {
+  const { confirm } = useConfirm();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -85,7 +87,15 @@ export default function AdminTeamPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Yakin ingin menghapus anggota tim ini?')) {
+    const isConfirmed = await confirm({
+      title: 'Hapus Anggota Tim',
+      message: 'Yakin ingin menghapus anggota tim ini dari daftar?',
+      confirmText: 'Hapus Anggota',
+      cancelText: 'Batal',
+      variant: 'danger',
+    });
+
+    if (isConfirmed) {
       try {
         await api.delete(`/admin/team/${id}`);
         fetchMembers();

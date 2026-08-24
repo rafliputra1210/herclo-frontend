@@ -118,7 +118,9 @@ export default function PublicTestimonials() {
 
       {/* Footer */}
       <footer className="border-t border-gray-800 py-10 text-center">
-        <Link href="/" className="text-xl font-black tracking-tight text-white">HERCLO.</Link>
+        <Link href="/" className="inline-block">
+          <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-8 md:h-9 w-auto object-contain mx-auto" />
+        </Link>
         <p className="text-gray-600 text-xs mt-2">&copy; {new Date().getFullYear()} HERCLO Official. All rights reserved.</p>
       </footer>
     </div>
