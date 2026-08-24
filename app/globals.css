@@ -30,3 +30,26 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #a3e635; /* Hijau stabilo */
 }
+
+/* Aturan Cetak Printer Thermal (Hanya menampilkan .print-area) */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area, .print-area * {
+    visibility: visible !important;
+  }
+  .print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+  @page {
+    margin: 0 !important;
+    size: auto !important;
+  }
+}

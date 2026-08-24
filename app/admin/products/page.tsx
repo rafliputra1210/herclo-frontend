@@ -19,6 +19,8 @@ interface Product {
   image_path?: string;
   category_id: number;
   category?: { name: string; };
+  size?: string;
+  items?: any[];
 }
 
 export default function ProductManagement() {
@@ -37,6 +39,7 @@ export default function ProductManagement() {
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
+  const [size, setSize] = useState('ALL SIZE');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -46,13 +49,19 @@ export default function ProductManagement() {
 
   const fetchData = async () => {
     try {
-      const [prodRes, catRes] = await Promise.all([
-        api.get('/admin/products'),
-        api.get('/categories')
-      ]);
-      
-      setProducts(prodRes.data.data || prodRes.data);
-      setCategories(catRes.data.data || catRes.data);
+      try {
+        const prodRes = await api.get('/admin/products');
+        setProducts(prodRes.data.data || prodRes.data || []);
+      } catch (err) {
+        console.error('Gagal mengambil data produk:', err);
+      }
+
+      try {
+        const catRes = await api.get('/categories');
+        setCategories(catRes.data.data || catRes.data || []);
+      } catch (err) {
+        console.error('Gagal mengambil data kategori:', err);
+      }
     } catch (error) {
       console.error('Gagal mengambil data:', error);
     } finally {
@@ -72,7 +81,7 @@ export default function ProductManagement() {
 
   const handleAddClick = () => {
     setEditingId(null);
-    setName(''); setCategoryId(''); setPrice(''); setStock(''); setDescription(''); setImage(null);
+    setName(''); setCategoryId(''); setPrice(''); setStock(''); setSize('ALL SIZE'); setDescription(''); setImage(null);
     setImagePreview(null);
     setExistingImagePath(null);
     setIsFormOpen(!isFormOpen);
@@ -84,6 +93,7 @@ export default function ProductManagement() {
     setCategoryId(String(product.category_id));
     setPrice(String(product.price));
     setStock(String(product.stock_quantity));
+    setSize(product.size || 'ALL SIZE');
     setDescription(product.description || '');
     setImage(null);
     setImagePreview(null);
@@ -115,6 +125,7 @@ export default function ProductManagement() {
     formData.append('category_id', categoryId);
     formData.append('price', price);
     formData.append('stock_quantity', stock);
+    formData.append('size', size);
     formData.append('description', description);
     
     if (image) {
@@ -142,7 +153,11 @@ export default function ProductManagement() {
       setExistingImagePath(null);
       fetchData();
     } catch (error: any) {
-      alert('Gagal menyimpan produk: ' + (error.response?.data?.message || 'Pastikan semua kolom terisi.'));
+      const serverMessage = error.response?.data?.message;
+      const validationErrors = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join('\n') 
+        : null;
+      alert('Gagal menyimpan produk:\n' + (validationErrors || serverMessage || 'Pastikan semua kolom terisi dengan benar.'));
     } finally {
       setIsSubmitting(false);
       const fileInput = document.getElementById('product-image') as HTMLInputElement;
@@ -203,10 +218,36 @@ export default function ProductManagement() {
                     <label className="block text-sm font-medium mb-1">Harga (Rp)</label>
                     <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required min="0" className="w-full border border-gray-300 p-2.5 rounded-lg focus:border-black outline-none" placeholder="250000" />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Stok Awal</label>
-                    <input type="number" value={stock} onChange={(e) => setStock(e.target.value)} required min="0" className="w-full border border-gray-300 p-2.5 rounded-lg focus:border-black outline-none" placeholder="50" />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+  <div>
+    <label className="block text-sm font-semibold mb-1">Ukuran Pakaian</label>
+    <select 
+      required
+      value={size} // pastikan membuat state: const [size, setSize] = useState('ALL SIZE')
+      onChange={(e) => setSize(e.target.value)}
+      className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black"
+    >
+      <option value="ALL SIZE">All Size</option>
+      <option value="S">Small (S)</option>
+      <option value="M">Medium (M)</option>
+      <option value="L">Large (L)</option>
+      <option value="XL">Extra Large (XL)</option>
+    </select>
+  </div>
+  
+  <div>
+    <label className="block text-sm font-semibold mb-1">Stok Awal (Akan digenerate jadi Barcode)</label>
+    <input 
+      type="number" 
+      required
+      min="1"
+      value={stock} // state stock
+      onChange={(e) => setStock(e.target.value)}
+      className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black"
+      placeholder="Contoh: 100"
+    />
+  </div>
+</div>
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">Deskripsi Produk</label>
                     <textarea 
@@ -333,108 +374,73 @@ export default function ProductManagement() {
         )}
       </div>
 
-      {/* ================= MODAL CETAK STIKER BARCODE ================= */}
-      {printProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm print:bg-white print:backdrop-blur-none">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl relative flex flex-col items-center print:shadow-none print:p-0">
-            <button 
-              onClick={() => { setPrintProduct(null); setSelectedVariant(null); }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-black font-bold print:hidden"
-            >
-              ✕ Tutup
-            </button>
+      {printProduct && (() => {
+        const itemsToPrint = printProduct.items && printProduct.items.length > 0 
+          ? printProduct.items 
+          : Array.from({ length: Math.max(1, Number(printProduct.stock_quantity) || 1) }, (_, index) => ({
+              serial_number: `HRC-${String(printProduct.id || '0').padStart(4, '0')}-${String(index + 1).padStart(3, '0')}`,
+              size: printProduct.size || 'ALL SIZE'
+            }));
 
-            <h3 className="font-bold text-lg mb-4 print:hidden">Pilih Varian untuk Dicetak</h3>
-
-            {/* Daftar Varian (Sembunyi saat diprint) */}
-            <div className="space-y-2 mb-6 w-full max-h-48 overflow-y-auto print:hidden">
-              {printProduct.variants && printProduct.variants.length > 0 ? (
-                printProduct.variants.map((variant: any) => (
-                  <button 
-                    key={variant.id}
-                    onClick={() => setSelectedVariant(variant)}
-                    className={`w-full text-left px-4 py-2 border rounded transition-colors flex justify-between items-center ${selectedVariant?.id === variant.id ? 'border-black bg-gray-50' : 'hover:bg-gray-50'}`}
-                  >
-                    <span className="font-medium text-sm">{variant.color} - {variant.size} (Stok: {variant.stock_quantity})</span>
-                    <span className="font-mono text-xs text-gray-500">{variant.sku}</span>
+        return (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 print:bg-white print:static print:inset-auto print:p-0 print:m-0 print:overflow-visible">
+            
+            <div className="min-h-screen p-8 flex flex-col items-center print:min-h-0 print:p-0 print:m-0 print:block">
+              
+              <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-xl text-center mb-8 print:hidden">
+                <h3 className="font-bold text-xl mb-2">Cetak {itemsToPrint.length} Stiker Barcode (2 Kolom Sejajar)</h3>
+                <p className="text-sm text-gray-500 mb-6">Siapkan printer thermal (RPN02N). Sistem akan mencetak 2 stiker sejajar per baris.</p>
+                
+                <div className="flex justify-center gap-4">
+                  <button onClick={() => setPrintProduct(null)} className="px-6 py-2 rounded-lg bg-gray-200 font-bold hover:bg-gray-300">Batal</button>
+                  <button onClick={() => window.print()} className="bg-black text-white px-8 py-2 rounded-lg font-bold hover:bg-gray-800 flex gap-2 items-center">
+                    <span>🖨️</span> Mulai Mencetak
                   </button>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-2">Produk ini tidak memiliki varian.</p>
-              )}
-            </div>
-
-            {/* AREA DESAIN STIKER (Hanya tampil jika varian sudah dipilih atau jika tidak punya varian kita cetak barcode produk utama) */}
-            {selectedVariant ? (
-              <div id="hangtag-area" className="w-[6cm] h-[3.5cm] bg-white border border-dashed border-gray-300 print:border-none flex flex-col justify-center px-3 py-2 text-black">
-                <p className="text-[11px] font-medium leading-tight truncate">{printProduct.name}</p>
-                <p className="text-[10px] font-medium leading-tight mb-2">
-                  {selectedVariant.color}: {selectedVariant.size} &nbsp; Rp {new Intl.NumberFormat('id-ID').format(printProduct.price)}
-                </p>
-                <div className="flex justify-center">
-                  <Barcode 
-                    value={selectedVariant.sku} 
-                    width={1.4}
-                    height={35}
-                    fontSize={10}
-                    margin={0}
-                    background="#ffffff"
-                    lineColor="#000000"
-                  />
                 </div>
               </div>
-            ) : (
-              (!printProduct.variants || printProduct.variants.length === 0) ? (
-                <div id="hangtag-area" className="w-[6cm] h-[3.5cm] bg-white border border-dashed border-gray-300 print:border-none flex flex-col justify-center px-3 py-2 text-black">
-                  <p className="text-[11px] font-medium leading-tight truncate">{printProduct.name}</p>
-                  <p className="text-[10px] font-medium leading-tight mb-2">
-                    Rp {new Intl.NumberFormat('id-ID').format(printProduct.price)}
-                  </p>
-                  <div className="flex justify-center">
-                    <Barcode 
-                      value={`2026${String(printProduct.id).padStart(4, '0')}`} 
-                      width={1.4}
-                      height={35}
-                      fontSize={10}
-                      margin={0}
-                      background="#ffffff"
-                      lineColor="#000000"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 print:hidden">Silakan pilih varian terlebih dahulu untuk menampilkan barcode.</p>
-              )
-            )}
 
-            {(selectedVariant || (!printProduct.variants || printProduct.variants.length === 0)) && (
-              <button 
-                onClick={() => window.print()}
-                className="mt-6 bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 transition-colors flex gap-2 items-center print:hidden"
-              >
-                <span>🖨️</span> Cetak ke Printer Thermal
-              </button>
-            )}
+              {/* AREA RENDER STIKER MASSAL 2 KOLOM SEJAJAR (Khusus Print Thermal RPN02N) */}
+              <div className="print-area grid grid-cols-2 gap-3 print:grid print:grid-cols-2 print:gap-x-[2mm] print:gap-y-[1.5mm] print:w-full print:p-0 print:m-0">
+                {itemsToPrint.map((item: any, idx: number) => (
+                  
+                  /* Desain 1 Stiker Thermal 2 Sisi Sejajar (Format RPN02N) */
+                  <div 
+                    key={item.serial_number || idx} 
+                    className="w-[32mm] sm:w-[33mm] h-[19mm] bg-white border border-dashed border-gray-300 rounded p-1 flex flex-col justify-between items-center text-black print:page-break-inside-avoid print:border-none print:shadow-none print:m-0 print:p-0.5 overflow-hidden box-border"
+                  >
+                    {/* Baris 1: Nama Produk */}
+                    <p className="w-full text-center text-[7.5px] font-semibold uppercase leading-tight truncate px-0.5">
+                      {printProduct.name}
+                    </p>
+
+                    {/* Baris 2: Ukuran (Kiri) & Harga (Kanan) */}
+                    <div className="w-full flex justify-between items-center text-[8px] font-bold leading-none px-0.5 my-0.5">
+                      <span>Size: {item.size || printProduct.size || 'ALL SIZE'}</span>
+                      <span>Rp {new Intl.NumberFormat('id-ID').format(Number(printProduct.price))}</span>
+                    </div>
+
+                    {/* Baris 3: 1D Barcode Centered */}
+                    <div className="w-full flex justify-center items-center leading-none">
+                      <Barcode 
+                        value={item.serial_number || `HRC-${printProduct.id}-${idx + 1}`} 
+                        width={0.8}      
+                        height={16}      
+                        fontSize={7.5}    
+                        margin={0}
+                        background="#ffffff"
+                        lineColor="#000000"
+                      />
+                    </div>
+
+                  </div>
+
+                ))}
+              </div>
+
+            </div>
           </div>
-        </div>
-      )}
-      
-      {/* CSS Khusus Print (Pastikan ini tetap ada di bagian paling bawah) */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #hangtag-area, #hangtag-area * {
-            visibility: visible;
-          }
-          #hangtag-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-          }
-        }
-      `}} />
+        );
+      })()}
     </div>
   );
 }

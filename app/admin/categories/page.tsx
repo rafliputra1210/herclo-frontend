@@ -6,6 +6,7 @@ import api from '../../../lib/axios';
 interface Category {
   id: number;
   name: string;
+  code?: string;
   slug: string;
   is_active?: boolean;
   created_at?: string;
@@ -21,6 +22,7 @@ export default function CategoryCrud() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [code, setCode] = useState(''); // State untuk kode kategori
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +83,7 @@ export default function CategoryCrud() {
   const handleOpenAddModal = () => {
     setEditingCategory(null);
     setCategoryName('');
+    setCode('');
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -89,6 +92,7 @@ export default function CategoryCrud() {
   const handleOpenEditModal = (category: Category) => {
     setEditingCategory(category);
     setCategoryName(category.name);
+    setCode(category.code || '');
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -98,6 +102,7 @@ export default function CategoryCrud() {
     setIsModalOpen(false);
     setEditingCategory(null);
     setCategoryName('');
+    setCode('');
     setFormError(null);
   };
 
@@ -115,11 +120,17 @@ export default function CategoryCrud() {
     try {
       if (editingCategory) {
         // PUT Request
-        await api.put(`/admin/categories/${editingCategory.id}`, { name: categoryName.trim() });
+        await api.put(`/admin/categories/${editingCategory.id}`, { 
+          name: categoryName.trim(),
+          code: code.trim()
+        });
         showToast(`Kategori "${categoryName}" berhasil diperbarui!`, 'success');
       } else {
         // POST Request
-        await api.post('/admin/categories', { name: categoryName.trim() });
+        await api.post('/admin/categories', { 
+          name: categoryName.trim(),
+          code: code.trim()
+        });
         showToast(`Kategori "${categoryName}" berhasil ditambahkan!`, 'success');
       }
       
@@ -304,6 +315,7 @@ export default function CategoryCrud() {
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th className="py-4 px-6">ID</th>
+                  <th className="py-4 px-6">Kode</th>
                   <th className="py-4 px-6">Nama Kategori</th>
                   <th className="py-4 px-6">URL Slug</th>
                   <th className="py-4 px-6">Status</th>
@@ -314,6 +326,11 @@ export default function CategoryCrud() {
                 {filteredCategories.map((category) => (
                   <tr key={category.id} className="hover:bg-gray-50/60 transition-colors group">
                     <td className="py-4 px-6 font-mono text-xs text-gray-400">#{category.id}</td>
+                    <td className="py-4 px-6">
+                      <span className="inline-block bg-black text-lime-400 px-2 py-0.5 rounded text-xs font-mono font-bold">
+                        {category.code || '-'}
+                      </span>
+                    </td>
                     <td className="py-4 px-6 font-semibold text-gray-900">{category.name}</td>
                     <td className="py-4 px-6">
                       <span className="inline-block bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md text-xs font-mono">
@@ -416,6 +433,19 @@ export default function CategoryCrud() {
                   <span className="font-semibold text-black">{slugPreview || '...'}</span>
                 </div>
               </div>
+              <div>
+  <label className="block text-sm font-semibold mb-1 text-gray-700">Kode Kategori</label>
+  <input 
+    type="text" 
+    required 
+    value={code} 
+    onChange={(e) => setCode(e.target.value)}
+    className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black font-mono"
+    placeholder="Contoh: 0016"
+    maxLength={4}
+  />
+  <p className="text-xs text-gray-500 mt-1">Gunakan 4 digit angka. Kode ini akan muncul di cetakan Barcode.</p>
+</div>
 
               {/* Action Buttons */}
               <div className="pt-3 flex items-center justify-end gap-3 border-t border-gray-100">
