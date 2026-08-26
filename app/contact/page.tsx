@@ -43,7 +43,7 @@ export default function ContactPage() {
               <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center shrink-0 text-xl">📍</div>
               <div>
                 <h4 className="font-bold text-lg">Workshop & Studio</h4>
-                <p className="text-gray-500 text-sm mt-1">Jl. Mawar Merah No. 12,<br/>Kecamatan Tandes, Surabaya<br/>Jawa Timur, 60187</p>
+                <p className="text-gray-500 text-sm mt-1">Jl. Irigasi No.136, RT.9/RW.2,<br/> Ujung Menteng, Kec. Cakung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13960, Indonesia</p>
               </div>
             </div>
 
