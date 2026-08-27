@@ -21,6 +21,7 @@ interface Product {
   category_id: number;
   category?: { name: string; };
   size?: string;
+  color?: string;
   items?: any[];
 }
 
@@ -28,26 +29,48 @@ export default function ProductManagement() {
   const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
   const [printProduct, setPrintProduct] = useState<any | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // State Form
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   
-  // State Input
+  // State Input Utama
   const [name, setName] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [size, setSize] = useState('ALL SIZE');
+  const [stock, setStock] = useState('20');
+  const [size, setSize] = useState('M, L');
+  const [color, setColor] = useState('Jet Black');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [existingImagePath, setExistingImagePath] = useState<string | null>(null);
-  
+
+  // Quick Size Stock Matrix
+  const [sizeStocks, setSizeStocks] = useState<{ [key: string]: number }>({
+    S: 0,
+    M: 10,
+    L: 10,
+    XL: 0,
+    'ALL SIZE': 0
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSizeStockChange = (sz: string, val: number) => {
+    const updated = { ...sizeStocks, [sz]: Math.max(0, val) };
+    setSizeStocks(updated);
+
+    const activeSizes = Object.entries(updated)
+      .filter(([_, qty]) => qty > 0)
+      .map(([s]) => s);
+
+    const total = Object.values(updated).reduce((acc, curr) => acc + curr, 0);
+    setStock(String(total));
+    setSize(activeSizes.length > 0 ? activeSizes.join(', ') : 'ALL SIZE');
+  };
 
   const fetchData = async () => {
     try {
@@ -83,9 +106,9 @@ export default function ProductManagement() {
 
   const handleAddClick = () => {
     setEditingId(null);
-    setName(''); setCategoryId(''); setPrice(''); setStock(''); setSize('ALL SIZE'); setDescription(''); setImage(null);
-    setImagePreview(null);
-    setExistingImagePath(null);
+    setName(''); setCategoryId(''); setPrice(''); setStock('20'); setSize('M, L'); setColor('Jet Black');
+    setSizeStocks({ S: 0, M: 10, L: 10, XL: 0, 'ALL SIZE': 0 });
+    setDescription(''); setImage(null); setImagePreview(null); setExistingImagePath(null);
     setIsFormOpen(!isFormOpen);
   };
 
@@ -96,6 +119,7 @@ export default function ProductManagement() {
     setPrice(String(product.price));
     setStock(String(product.stock_quantity));
     setSize(product.size || 'ALL SIZE');
+    setColor(product.color || 'Jet Black');
     setDescription(product.description || '');
     setImage(null);
     setImagePreview(null);
@@ -122,12 +146,15 @@ export default function ProductManagement() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const finalStock = Math.max(1, parseInt(stock) || 1);
+
     const formData = new FormData();
     formData.append('name', name);
     formData.append('category_id', categoryId);
     formData.append('price', price);
-    formData.append('stock_quantity', stock);
-    formData.append('size', size);
+    formData.append('stock_quantity', String(finalStock));
+    formData.append('size', size || 'ALL SIZE');
+    formData.append('color', color || 'Standard');
     formData.append('description', description);
     
     if (image) {
@@ -193,7 +220,7 @@ export default function ProductManagement() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Kelola Produk</h1>
-          <p className="text-gray-500 text-sm">Manajemen katalog, harga, stok, dan gambar produk.</p>
+          <p className="text-gray-500 text-sm">Manajemen katalog, harga, varian warna/ukuran, dan stok.</p>
         </div>
         <button 
           onClick={handleAddClick}
@@ -209,55 +236,86 @@ export default function ProductManagement() {
              <h3 className="font-semibold text-lg">{editingId ? 'Edit Produk' : 'Detail Produk Baru'}</h3>
              <button onClick={() => setIsFormOpen(false)} className="text-red-500 text-sm hover:underline">Tutup Form</button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium mb-1">Nama Produk</label>
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:border-black outline-none" placeholder="Contoh: Herclo Black Hoodie" />
+                    <label className="block text-sm font-semibold mb-1">Nama Produk</label>
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-black outline-none" placeholder="Contoh: Herclo Oversized Hoodie" />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium mb-1">Kategori</label>
-                    <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:border-black outline-none bg-white">
+                    <label className="block text-sm font-semibold mb-1">Kategori</label>
+                    <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-black outline-none bg-white">
                         <option value="">-- Pilih Kategori --</option>
                         {categories.map(cat => (
                           <option key={cat.id} value={cat.id}>{cat.name}</option>
                         ))}
                     </select>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Harga (Rp)</label>
-                    <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required min="0" className="w-full border border-gray-300 p-2.5 rounded-lg focus:border-black outline-none" placeholder="250000" />
+                <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold mb-1">Harga Satuan (Rp)</label>
+                    <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required min="0" className="w-full border border-gray-300 p-2.5 rounded-lg focus:ring-2 focus:ring-black outline-none" placeholder="250000" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-  <div>
-    <label className="block text-sm font-semibold mb-1">Ukuran Pakaian</label>
-    <select 
-      required
-      value={size} // pastikan membuat state: const [size, setSize] = useState('ALL SIZE')
-      onChange={(e) => setSize(e.target.value)}
-      className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black"
-    >
-      <option value="ALL SIZE">All Size</option>
-      <option value="S">Small (S)</option>
-      <option value="M">Medium (M)</option>
-      <option value="L">Large (L)</option>
-      <option value="XL">Extra Large (XL)</option>
-    </select>
-  </div>
-  
-  <div>
-    <label className="block text-sm font-semibold mb-1">Stok Awal (Akan digenerate jadi Barcode)</label>
-    <input 
-      type="number" 
-      required
-      min="1"
-      value={stock} // state stock
-      onChange={(e) => setStock(e.target.value)}
-      className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black"
-      placeholder="Contoh: 100"
-    />
-  </div>
-</div>
+
+                {/* --- MATRIX WARNA & STOK UKURAN CEPAT --- */}
+                <div className="md:col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                      <h4 className="font-bold text-sm text-gray-900">Atur Warna & Stok per Ukuran (Cepat)</h4>
+                      <p className="text-xs text-gray-500">Isi jumlah stok pada setiap ukuran yang ingin diproduksi.</p>
+                    </div>
+                    <div className="bg-lime-400 text-black px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-xs">
+                      Total Stok: {stock || 0} Pcs
+                    </div>
+                  </div>
+
+                  {/* Input Warna dengan Preset Cepat */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Warna Produk</label>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <input 
+                        type="text" 
+                        required
+                        value={color} 
+                        onChange={(e) => setColor(e.target.value)}
+                        className="flex-1 bg-white border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black text-sm"
+                        placeholder="Contoh: Jet Black, Sage Green, Oversized White..."
+                      />
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {['Hitam', 'Abu-abu', 'Putih', 'Navy'].map(preset => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setColor(preset)}
+                            className="px-2.5 py-1.5 bg-gray-200 hover:bg-black hover:text-white rounded text-[11px] font-bold transition-all"
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Grid Input Stok per Ukuran (S, M, L, XL, ALL SIZE) */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Input Stok per Ukuran</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                      {['S', 'M', 'L', 'XL', 'ALL SIZE'].map((sz) => (
+                        <div key={sz} className="bg-white p-2.5 rounded-lg border border-gray-200 text-center shadow-xs">
+                          <span className="block text-xs font-black text-gray-700 mb-1">{sz}</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={sizeStocks[sz] ?? 0}
+                            onChange={(e) => handleSizeStockChange(sz, parseInt(e.target.value) || 0)}
+                            className="w-full text-center font-bold text-sm border border-gray-300 rounded p-1.5 focus:ring-2 focus:ring-black outline-none"
+                            placeholder="0"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium mb-1">Deskripsi Produk</label>
                     <textarea 
@@ -335,15 +393,16 @@ export default function ProductManagement() {
               <tr className="bg-gray-50 border-b border-gray-200 text-sm">
                 <th className="p-4 font-semibold text-gray-600">Produk</th>
                 <th className="p-4 font-semibold text-gray-600">Kategori</th>
+                <th className="p-4 font-semibold text-gray-600">Warna</th>
                 <th className="p-4 font-semibold text-gray-600">Harga</th>
-                <th className="p-4 font-semibold text-gray-600">Stok</th>
+                <th className="p-4 font-semibold text-gray-600">Stok Total</th>
                 <th className="p-4 font-semibold text-gray-600 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-500">Belum ada produk.</td>
+                  <td colSpan={6} className="p-8 text-center text-gray-500">Belum ada produk.</td>
                 </tr>
               ) : (
                 products.map((product) => (
@@ -360,11 +419,15 @@ export default function ProductManagement() {
                             <span className="flex items-center justify-center h-full text-[10px] text-gray-400">No Img</span>
                           )}
                         </div>
-                        <span className="font-medium text-gray-900">{product.name}</span>
+                        <div>
+                          <span className="font-bold text-gray-900 block">{product.name}</span>
+                          <span className="text-xs text-gray-500">Size: {product.size || 'ALL SIZE'}</span>
+                        </div>
                     </td>
                     <td className="p-4 text-gray-600 text-sm">{product.category?.name || '-'}</td>
+                    <td className="p-4 text-gray-700 text-sm font-semibold">{product.color || '-'}</td>
                     <td className="p-4 text-gray-900 font-medium">Rp {new Intl.NumberFormat('id-ID').format(Number(product.price))}</td>
-                    <td className="p-4 text-gray-600 text-sm">{product.stock_quantity}</td>
+                    <td className="p-4 text-gray-700 text-sm font-bold">{product.stock_quantity} pcs</td>
                     <td className="p-4 text-right space-x-3">
                       {/* Tombol Cetak Hangtag */}
                       <button 

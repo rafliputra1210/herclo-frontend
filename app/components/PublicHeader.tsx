@@ -142,7 +142,6 @@ export default function PublicHeader() {
           <Link href="/gallery" className={`hover:text-lime-500 transition-colors ${pathname === '/gallery' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Galeri</Link>
           <Link href="/articles" className={`hover:text-lime-500 transition-colors ${pathname.startsWith('/articles') ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Artikel</Link>
           <Link href="/testimonials" className={`hover:text-lime-500 transition-colors ${pathname === '/testimonials' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Testimoni</Link>
-          <Link href="/faq" className={`hover:text-lime-500 transition-colors ${pathname === '/faq' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>FAQ</Link>
           <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Kontak</Link>
         </nav>
         
@@ -291,10 +290,6 @@ export default function PublicHeader() {
                   <div className="px-3 pb-1">
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Bantuan</p>
                   </div>
-                  <Link href="/faq" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
-                    <svg className="w-5 h-5 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    FAQ
-                  </Link>
                   <Link href="/contact" onClick={() => setIsSidebarOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200">
                     <svg className="w-5 h-5 text-slate-450" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                     Hubungi Kami

@@ -15,7 +15,8 @@ export default function ReceiptPage() {
     if (savedReceipt) {
       setReceipt(JSON.parse(savedReceipt));
     } else {
-      router.push('/'); // Jika tidak ada data, kembalikan ke beranda
+      const timer = setTimeout(() => router.replace('/'), 0);
+      return () => clearTimeout(timer);
     }
   }, [router]);
 

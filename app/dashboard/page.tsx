@@ -38,7 +38,7 @@ export default function CustomerDashboard() {
         setOrders(response.data.data);
       } catch (error: any) {
         if (error.response?.status === 401) {
-          router.push('/login');
+          router.replace('/login');
         } else {
           console.error('Gagal mengambil riwayat pesanan', error);
         }

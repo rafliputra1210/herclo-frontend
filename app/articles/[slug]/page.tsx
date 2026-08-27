@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../../lib/axios';
+import PublicHeader from '../../components/PublicHeader';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
@@ -24,11 +25,17 @@ export default function SingleArticlePage() {
       .finally(() => setLoading(false));
   }, [slug, router]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold">Memuat Jurnal...</div>;
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <PublicHeader />
+      <div className="flex-1 flex items-center justify-center font-bold text-gray-500">Memuat Jurnal...</div>
+    </div>
+  );
   if (!article) return null;
 
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900 pb-20">
+      <PublicHeader />
       {/* HEADER & FOTO ARTIKEL */}
       <header className="relative w-full h-[60vh] bg-gray-100 flex items-end justify-center overflow-hidden">
         {article.image_path ? (
@@ -58,17 +65,38 @@ export default function SingleArticlePage() {
 
       {/* ISI ARTIKEL */}
       <article className="max-w-3xl mx-auto px-6 py-16">
-        <div className="prose prose-lg prose-gray max-w-none">
-          {(article.content || '').split('\n').map((paragraph: string, index: number) => (
-            <p key={index} className="mb-6 leading-relaxed text-gray-600 text-lg">
-              {paragraph}
-            </p>
-          ))}
+        <div className="space-y-6 text-gray-800">
+          {(article.content || '')
+            .split(/\n\s*\n/)
+            .map((paragraphGroup: string, index: number) => {
+              const trimmed = paragraphGroup.trim();
+              if (!trimmed) return null;
+              
+              if (trimmed.startsWith('>')) {
+                return (
+                  <blockquote key={index} className="border-l-4 border-lime-400 pl-5 italic text-gray-800 font-medium py-3 bg-gray-50 rounded-r-2xl my-6">
+                    {trimmed.replace(/^>\s*/, '')}
+                  </blockquote>
+                );
+              }
+              
+              return (
+                <p key={index} className="text-base md:text-lg leading-relaxed md:leading-loose text-gray-700 whitespace-pre-line">
+                  {trimmed}
+                </p>
+              );
+            })}
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-200 text-center">
-          <Link href="/articles" className="inline-flex items-center gap-2 text-sm font-bold hover:text-emerald-600 transition-colors">
-            ← Kembali ke Semua Jurnal
+        <div className="mt-16 pt-8 border-t border-gray-200 flex flex-wrap items-center justify-center gap-4 text-center">
+          <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-full transition-all">
+            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Kembali ke Beranda
+          </Link>
+          <Link href="/articles" className="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-black hover:bg-gray-800 rounded-full transition-all">
+            ← Semua Artikel & Jurnal
           </Link>
         </div>
       </article>

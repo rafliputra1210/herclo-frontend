@@ -4,6 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import PublicHeader from '../components/PublicHeader';
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface TeamMember {
   id: number;
@@ -40,10 +43,23 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900 selection:bg-emerald-500 selection:text-white pb-0">
+      <PublicHeader />
       
       {/* SECTION 1: HERO & STATEMENT */}
-      <section className="max-w-7xl mx-auto px-6 pt-24 pb-16 md:pt-32 md:pb-24 flex flex-col md:flex-row items-center gap-16">
+      <section className="max-w-7xl mx-auto px-6 pt-12 pb-16 md:pt-16 md:pb-24 flex flex-col md:flex-row items-center gap-16">
         <div className="flex-1 space-y-8">
+          <div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-bold text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-full transition-all active:scale-95 shadow-xs"
+            >
+              <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              Kembali ke Beranda
+            </Link>
+          </div>
+
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-gray-400">
             Kisah Kami — Est. 2026
           </p>
@@ -59,7 +75,7 @@ export default function ProfilePage() {
           <div className="aspect-[4/5] md:aspect-square relative rounded-3xl overflow-hidden shadow-2xl group">
             {profile?.image_path ? (
               <img 
-                src={`http://127.0.0.1:8000${profile.image_path}`} 
+                src={`${BACKEND_URL}${profile.image_path}`} 
                 alt="HERCLO Studio" 
                 className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform group-hover:scale-105"
               />
@@ -78,31 +94,7 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* SECTION 2: VISION & CRAFTSMANSHIP (Dark Mode) */}
-      <section className="bg-gray-950 text-white py-32 relative overflow-hidden">
-        {/* Dekorasi Animasi Partikel/Cahaya Latar Belakang */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-900/20 blur-[120px] rounded-full pointer-events-none"></div>
-
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-10 relative z-10">
-          <h3 className="text-4xl md:text-5xl font-black tracking-tight text-white">Kualitas Tanpa Kompromi.</h3>
-          
-          <div className="space-y-8 text-lg text-gray-300 leading-relaxed font-light">
-            <p>
-              Setiap potongan kain, setiap jahitan, dan setiap siluet dirancang dengan ketelitian tingkat tinggi. Kami percaya bahwa pakaian bukan sekadar penutup tubuh, melainkan manifestasi dari identitas dan rasa percaya diri pemakainya.
-            </p>
-            <p>
-              Dengan memadukan teknik pembuatan pakaian modern dan sentuhan seni klasik, koleksi kami diciptakan untuk mereka yang menghargai detail. Dari Dailywear yang esensial hingga koleksi eksklusif, kami memastikan Anda selalu tampil prima di setiap kesempatan.
-            </p>
-          </div>
-
-          <div className="pt-12 border-t border-white/10 mt-12 inline-block">
-            <p className="text-sm font-bold uppercase tracking-widest text-emerald-400 mb-2">Rafli Putra</p>
-            <p className="text-xs text-gray-500 uppercase tracking-widest">Founder & Creative Director</p>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: THE TEAM (Di Balik Layar) */}
+      {/* SECTION 2: THE TEAM (Di Balik Layar) */}
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -116,7 +108,7 @@ export default function ProfilePage() {
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 shadow-lg bg-gray-200">
                   {member.image_path ? (
                     <img 
-                      src={`http://127.0.0.1:8000${member.image_path}`} 
+                      src={`${BACKEND_URL}${member.image_path}`} 
                       alt={member.name}
                       className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-105"
                     />
@@ -136,7 +128,7 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* SECTION 4: CALL TO ACTION */}
+      {/* SECTION 3: CALL TO ACTION */}
       <section className="relative py-32 overflow-hidden border-t border-gray-100 bg-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center space-y-10">
           <h3 className="text-4xl md:text-5xl font-black tracking-tight">Jadilah Bagian dari<br/>Perjalanan Kami.</h3>

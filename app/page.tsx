@@ -10,7 +10,7 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 // --- Definisi Tipe Data ---
-interface Product { id: number; name: string; price: string | number; stock_quantity?: number; description?: string; image_path?: string; category?: { name: string; }; }
+interface Product { id: number; name: string; price: string | number; stock_quantity?: number; description?: string; image_path?: string; color?: string; category?: { name: string; }; }
 interface Gallery { id: number; title: string; category: string; image_path: string; }
 interface Article { id: number; title: string; slug: string; content: string; image_path?: string; created_at: string; }
 interface Testimonial { id: number; customer_name: string; content: string; rating: number; is_featured: boolean; }
@@ -61,22 +61,24 @@ export default function Home() {
 
   const fetchPublicData = async () => {
     // Fast parallel fetch without blocking loading screen for too long
-    const fetchPromises = Promise.allSettled([
+    Promise.allSettled([
       api.get('/products').then(res => setProducts(res.data?.data || res.data || [])),
       api.get('/banners').then(res => setBanners(res.data?.data || res.data || [])),
       api.get('/galleries').then(res => setGalleries(res.data?.data || res.data || [])),
       api.get('/articles').then(res => setArticles(res.data?.data || res.data || [])),
       api.get('/testimonials').then(res => setTestimonials(res.data?.data || res.data || [])),
-    ]);
-
-    // Fast loading duration cap (max 200ms)
-    const timer = new Promise(resolve => setTimeout(resolve, 200));
-    await Promise.race([fetchPromises, timer]);
-    setLoading(false);
+    ]).finally(() => {
+      setLoading(false);
+    });
   };
 
   useEffect(() => {
     fetchPublicData();
+    // Safety timer cap: maksimal 1.5 detik loading langsung selesai
+    const maxTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(maxTimer);
   }, []);
 
   const heroBanners = banners.filter(b => (b.type || 'hero') === 'hero');
@@ -175,7 +177,7 @@ export default function Home() {
           </span>
           
           <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter mb-8 leading-none relative z-10 uppercase">
-            SHOW MORE <br/> 
+            Do MORE <br/> 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-white to-gray-400">
               BE MORE.
             </span>
@@ -509,51 +511,85 @@ export default function Home() {
 
       </div>
 
-      {/* --- FOOTER ELEGAN --- */}
-      <footer className="bg-black text-white pt-20 pb-12 border-t-4 border-lime-400 mt-16">
+      {/* --- FOOTER ELEGAN & MODERN --- */}
+      <footer className="bg-black text-white pt-16 pb-12 border-t-2 border-lime-400 mt-20 relative">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-14">
+            
+            {/* Kolom 1: Brand Info & Sosmed */}
+            <div className="space-y-4">
               <Link href="/">
-                <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-10 md:h-12 w-auto object-contain mb-4 cursor-pointer" />
+                <img src="/LOGO HERCLO3.png" alt="HERCLO Logo" className="h-9 md:h-10 w-auto object-contain cursor-pointer" />
               </Link>
-              <p className="text-gray-400 text-xs md:text-sm leading-relaxed font-medium">
+              <p className="text-zinc-400 text-xs md:text-sm leading-relaxed font-normal max-w-sm">
                 Mendefinisikan ulang batas kenyamanan dan gaya. Premium streetwear & daily wear untuk mereka yang berani tampil beda.
               </p>
             </div>
+
+            {/* Kolom 2: Navigasi Utama */}
             <div>
-              <h4 className="font-bold text-lime-400 uppercase tracking-widest mb-6 text-xs">Navigasi Utama</h4>
-              <ul className="space-y-3 text-xs text-gray-400 font-bold uppercase tracking-wider">
-                <li><Link href="/#koleksi" className="hover:text-lime-400 transition-colors">Koleksi Terbaru</Link></li>
-                <li><Link href="/collection" className="hover:text-lime-400 transition-colors">Katalog Lengkap</Link></li>
-                <li><Link href="/gallery" className="hover:text-lime-400 transition-colors">Lookbook Galeri</Link></li>
-                <li><Link href="/articles" className="hover:text-lime-400 transition-colors">Journal Blog</Link></li>
+              <h4 className="font-black text-lime-400 uppercase tracking-[0.2em] mb-5 text-[11px] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-400 inline-block"></span>
+                Navigasi Utama
+              </h4>
+              <ul className="space-y-2.5 text-xs text-zinc-400 font-semibold uppercase tracking-wider">
+                <li><Link href="/#koleksi" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Koleksi Terbaru</Link></li>
+                <li><Link href="/collection" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Katalog Lengkap</Link></li>
+                <li><Link href="/gallery" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Lookbook Galeri</Link></li>
+                <li><Link href="/articles" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Journal Blog</Link></li>
               </ul>
             </div>
+
+            {/* Kolom 3: Layanan Pelanggan */}
             <div>
-              <h4 className="font-bold text-lime-400 uppercase tracking-widest mb-6 text-xs">Layanan Pelanggan</h4>
-              <ul className="space-y-3 text-xs text-gray-400 font-bold uppercase tracking-wider">
-                <li><Link href="/faq" className="hover:text-lime-400 transition-colors">Pertanyaan Umum (FAQ)</Link></li>
-                <li><Link href="/contact" className="hover:text-lime-400 transition-colors">Hubungi Kami</Link></li>
-                <li><Link href="/cart" className="hover:text-lime-400 transition-colors">Keranjang Belanja</Link></li>
+              <h4 className="font-black text-lime-400 uppercase tracking-[0.2em] mb-5 text-[11px] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-400 inline-block"></span>
+                Layanan Pelanggan
+              </h4>
+              <ul className="space-y-2.5 text-xs text-zinc-400 font-semibold uppercase tracking-wider">
+                <li><Link href="/faq" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Pertanyaan Umum (FAQ)</Link></li>
+                <li><Link href="/contact" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Hubungi Kami</Link></li>
+                <li><Link href="/cart" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Keranjang Belanja</Link></li>
+                <li><Link href="/profile" className="hover:text-lime-400 transition-colors flex items-center gap-1.5"><span>›</span> Profil Perusahaan</Link></li>
               </ul>
             </div>
+
+            {/* Kolom 4: Lokasi & Kontak */}
             <div>
-              <h4 className="font-bold text-lime-400 uppercase tracking-widest mb-6 text-xs">Lokasi & Kontak</h4>
-              <ul className="space-y-3 text-xs text-gray-400 font-medium">
-                <li>📍 Surabaya, Jawa Timur, Indonesia</li>
-                <li>✉️ hello@herclo.co.id</li>
-                <li>📞 +62 812-3456-7890</li>
+              <h4 className="font-black text-lime-400 uppercase tracking-[0.2em] mb-5 text-[11px] flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-lime-400 inline-block"></span>
+                Lokasi & Kontak
+              </h4>
+              <ul className="space-y-3 text-xs text-zinc-400 font-normal">
+                <li className="flex items-start gap-2.5">
+                  <svg className="w-4 h-4 text-lime-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span>Cakung, Jakarta Timur, Indonesia</span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  <a href="mailto:hello@herclo.com" className="hover:text-lime-400 transition-colors">hello@herclo.com</a>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                  <span>+62 812-3456-7890</span>
+                </li>
               </ul>
             </div>
+
           </div>
-          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-[10px] font-bold tracking-widest uppercase">&copy; {new Date().getFullYear()} HERCLO STUDIO. ALL RIGHTS RESERVED.</p>
-            <div className="flex gap-6 text-xs font-bold text-gray-500 uppercase tracking-widest">
-              <span className="hover:text-lime-400 cursor-pointer transition-colors">Instagram</span>
-              <span className="hover:text-lime-400 cursor-pointer transition-colors">TikTok</span>
-              <span className="hover:text-lime-400 cursor-pointer transition-colors">WhatsApp</span>
-            </div>
+
+          {/* Bottom Bar / Copyright */}
+          <div className="border-t border-zinc-900 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-zinc-500 text-[11px] font-bold tracking-widest uppercase text-center sm:text-left">
+              &copy; {new Date().getFullYear()} HERCLO OFFICIAL. ALL RIGHTS RESERVED.
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex items-center gap-2 text-[11px] font-bold text-zinc-400 hover:text-lime-400 transition-colors uppercase tracking-wider group cursor-pointer"
+            >
+              <span>Kembali Ke Atas</span>
+              <span className="w-6 h-6 rounded-full bg-zinc-900 group-hover:bg-lime-400 group-hover:text-black border border-zinc-800 flex items-center justify-center text-lime-400 text-xs transition-all">↑</span>
+            </button>
           </div>
         </div>
       </footer>
@@ -599,10 +635,33 @@ export default function Home() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Warna</label>
-                  <div className="flex gap-3">
-                    {['Hitam', 'Putih', 'Abu'].map(c => (
-                      <button key={c} onClick={() => setVariant({...variant, color: c})} className={`px-5 h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${variant.color === c ? 'bg-black text-lime-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{c}</button>
-                    ))}
+                  <div className="flex gap-2 flex-wrap">
+                    {selectedProduct.color ? (
+                      selectedProduct.color.split(',').map((c: string) => {
+                        const trimmedColor = c.trim();
+                        if (!trimmedColor) return null;
+                        const isSelected = variant.color === trimmedColor;
+                        return (
+                          <button 
+                            key={trimmedColor} 
+                            type="button"
+                            onClick={() => setVariant({ ...variant, color: trimmedColor })} 
+                            className={`px-4 h-11 rounded-xl flex items-center gap-2 font-bold text-sm transition-all border ${
+                              isSelected 
+                                ? 'bg-black text-lime-400 border-black shadow-sm' 
+                                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                            }`}
+                          >
+                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: trimmedColor.toLowerCase() }}></span>
+                            {trimmedColor}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <button type="button" className="px-4 h-11 bg-black text-lime-400 rounded-xl font-bold text-sm">
+                        Standard
+                      </button>
+                    )}
                   </div>
                 </div>
 

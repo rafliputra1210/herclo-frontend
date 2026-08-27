@@ -169,16 +169,45 @@ export default function ArticleManagement() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Konten Artikel</label>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+                <label className="block text-sm font-semibold text-gray-900">Konten Artikel (Paragraf & Format)</label>
+                <div className="flex items-center gap-1.5 text-xs flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const cleaned = formData.content
+                        .split('\n')
+                        .map(line => line.trim())
+                        .join('\n')
+                        .replace(/\n{3,}/g, '\n\n');
+                      setFormData({ ...formData, content: cleaned });
+                    }}
+                    className="px-2.5 py-1 bg-lime-400 text-black font-bold rounded-lg hover:bg-lime-500 transition-colors shadow-xs"
+                  >
+                    ✨ Rapikan Paragraf Otomatis
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, content: formData.content + '\n\n• ' })}
+                    className="px-2.5 py-1 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    + Poin List
+                  </button>
+                </div>
+              </div>
               <textarea 
                 name="content" 
                 value={formData.content} 
                 onChange={handleInputChange} 
                 required 
-                rows={8}
-                className="w-full border p-2 rounded resize-y"
-                placeholder="Tulis isi artikel di sini..."
+                rows={12}
+                className="w-full border border-gray-300 p-4 rounded-xl resize-y text-sm leading-relaxed font-sans focus:ring-2 focus:ring-black outline-none shadow-xs whitespace-pre-wrap"
+                placeholder="Tuliskan isi artikel Anda di sini...&#10;&#10;Gunakan Enter 2x untuk memisahkan antar paragraf agar tampil rapi di website.&#10;&#10;Paragraf 1: Pengenalan tren fashion atau konsep streetwear...&#10;&#10;Paragraf 2: Tips memadukan warna dan aksesoris..."
               ></textarea>
+              <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+                <span>💡</span>
+                <span><b>Tips Rapih:</b> Tekan <b>Enter 2x</b> untuk membuat jeda paragraf baru. Klik tombol <b>✨ Rapikan Paragraf Otomatis</b> untuk merapikan spasi & spasi baris otomatis.</span>
+              </p>
             </div>
             <button 
               type="submit" 

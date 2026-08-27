@@ -25,15 +25,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.push('/login');
-      return;
+      const timer = setTimeout(() => router.replace('/login'), 0);
+      return () => clearTimeout(timer);
     }
 
     api.get('/user')
       .then((res) => {
         const userData = res.data;
         if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
-          router.push('/dashboard');
+          router.replace('/dashboard');
           return;
         }
         setUser(userData);
@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch((err) => {
         console.error('Session invalid:', err);
         localStorage.removeItem('auth_token');
-        router.push('/login');
+        router.replace('/login');
       });
   }, [router]);
 

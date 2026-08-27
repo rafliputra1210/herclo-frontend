@@ -10,7 +10,7 @@ import PublicHeader from '../components/PublicHeader';
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Category { id: number; name: string; }
-interface Product { id: number; name: string; price: number; stock_quantity?: number; description?: string; image_path?: string; category?: { name: string; }; }
+interface Product { id: number; name: string; price: number; stock_quantity?: number; description?: string; image_path?: string; color?: string; category?: { name: string; }; }
 
 function CollectionContent() {
   const searchParams = useSearchParams();
@@ -26,7 +26,7 @@ function CollectionContent() {
 
   const openModal = (product: Product) => {
     setSelectedProduct(product);
-    setVariant({ size: 'M', color: 'Hitam', qty: 1 });
+    setVariant({ size: 'M', color: product.color || 'Hitam', qty: 1 });
   };
 
   const handleBuy = (isDirectBuy: boolean) => {
@@ -80,10 +80,19 @@ function CollectionContent() {
     if (selectedCategory) endpoint += `&category_id=${selectedCategory}`;
     if (sortOrder) endpoint += `&sort=${sortOrder}`;
 
+    const maxTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     api.get(endpoint)
       .then(res => setProducts(res.data.data))
       .catch(console.error)
-      .finally(() => setLoading(false));
+      .finally(() => {
+        clearTimeout(maxTimer);
+        setLoading(false);
+      });
+
+    return () => clearTimeout(maxTimer);
   }, [searchKeyword, selectedCategory, sortOrder]);
 
   // Animasi Framer Motion
@@ -154,10 +163,33 @@ function CollectionContent() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Warna</label>
-                  <div className="flex gap-3 flex-wrap">
-                    {['Hitam', 'Putih', 'Abu', 'Navy'].map(c => (
-                      <button key={c} onClick={() => setVariant({...variant, color: c})} className={`px-4 h-12 flex items-center justify-center font-bold text-sm transition-all ${variant.color === c ? 'bg-black text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{c}</button>
-                    ))}
+                  <div className="flex gap-2 flex-wrap">
+                    {selectedProduct.color ? (
+                      selectedProduct.color.split(',').map((c: string) => {
+                        const trimmedColor = c.trim();
+                        if (!trimmedColor) return null;
+                        const isSelected = variant.color === trimmedColor;
+                        return (
+                          <button 
+                            key={trimmedColor} 
+                            type="button"
+                            onClick={() => setVariant({ ...variant, color: trimmedColor })} 
+                            className={`px-4 h-11 rounded-xl flex items-center gap-2 font-bold text-sm transition-all border ${
+                              isSelected 
+                                ? 'bg-black text-white border-black shadow-sm' 
+                                : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                            }`}
+                          >
+                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: trimmedColor.toLowerCase() }}></span>
+                            {trimmedColor}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <button type="button" className="px-4 h-11 bg-black text-white rounded-xl font-bold text-sm">
+                        Standard
+                      </button>
+                    )}
                   </div>
                 </div>
                 
@@ -339,7 +371,7 @@ function CollectionContent() {
               variants={staggerContainer}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"
+              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6"
             >
               <AnimatePresence>
                 {products.map((product) => (
@@ -382,6 +414,13 @@ function CollectionContent() {
                       <h3 className="text-[12px] md:text-base font-black text-black mt-1 line-clamp-2 leading-tight">
                         {product.name}
                       </h3>
+
+                      {product.color && (
+                        <p className="text-[10px] md:text-xs text-gray-500 font-bold mt-1 flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block shrink-0 shadow-xs" style={{ backgroundColor: product.color.toLowerCase() }}></span>
+                          <span className="truncate">{product.color}</span>
+                        </p>
+                      )}
                       
                       <div className="mt-auto pt-2 flex flex-col gap-2">
                         <p className="font-black text-lime-600 md:text-gray-500 text-[13px] md:text-base">

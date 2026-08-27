@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '../../lib/axios';
+import PublicHeader from '../components/PublicHeader';
 
 interface Article {
   id: number;
@@ -33,10 +34,23 @@ export default function ArticlesPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 pb-20">
+      <PublicHeader />
+      
       {/* Banner / Header */}
-      <section className="bg-black text-white py-16 px-6 text-center">
+      <section className="bg-black text-white py-14 px-6 text-center relative">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-emerald-400 mb-2">
+          <div className="mb-6 flex justify-start sm:justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-bold text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-full transition-all hover:border-lime-400 active:scale-95 shadow-sm"
+            >
+              <svg className="w-4 h-4 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              Kembali ke Beranda
+            </Link>
+          </div>
+          <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-lime-400 mb-2">
             HERCLO JOURNAL
           </p>
           <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight">

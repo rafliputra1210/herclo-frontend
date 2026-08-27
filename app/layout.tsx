@@ -5,7 +5,7 @@ import BottomNav from './components/BottomNav';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'HERCLO. | Show More Be More',
+  title: 'HERCLO. | Do More Be More',
   description: 'Dailywear, Sportwear, dan Muslimwear Premium',
   icons: {
     icon: '/LOGO HERCLO5.png',
@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className="scroll-smooth">
+    <html lang="id" className="scroll-smooth" data-scroll-behavior="smooth">
       <body className={`${inter.className} bg-gray-50 text-gray-900`}>
         
         {/* --- TEKS BERJALAN (MARQUEE) --- */}
