@@ -9,11 +9,21 @@ const api = axios.create({
     },
 });
 
-// Interceptor untuk menyisipkan Token Bearer secara otomatis
+// Daftar endpoint publik (tidak perlu token)
+const publicEndpoints = [
+    '/register', '/login',
+    '/categories', '/products', '/banners',
+    '/galleries', '/articles', '/testimonials',
+    '/checkout', '/settings', '/midtrans-callback',
+    '/promo/validate'
+];
+
 api.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('auth_token');
-        if (token) {
+        // Cek apakah URL termasuk endpoint publik
+        const isPublic = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+        if (token && !isPublic) {
             config.headers.Authorization = `Bearer ${token}`;
         }
     }
