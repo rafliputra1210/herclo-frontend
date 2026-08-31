@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { getAssetUrl } from '../../../lib/config';
 import { useConfirm } from '../../components/ConfirmContext';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Gallery {
   id: number;
@@ -157,7 +156,7 @@ export default function GalleryManagement() {
                   {/* Gunakan URL base dari backend Laravel */}
                   <div className="h-40 bg-gray-100 relative overflow-hidden">
                     <img 
-                      src={item.image_path.startsWith('http') ? item.image_path : `${BACKEND_URL}${item.image_path}`} 
+                      src={getAssetUrl(item.image_path)} 
                       alt={item.title} 
                       className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                     />

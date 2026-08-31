@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import api from '../lib/axios';
+import { getAssetUrl } from '../lib/config';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PublicHeader from './components/PublicHeader';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 // --- Definisi Tipe Data ---
 interface Product { id: number; name: string; price: string | number; stock_quantity?: number; description?: string; image_path?: string; color?: string; category?: { name: string; }; }
@@ -126,7 +125,7 @@ export default function Home() {
         <section className="relative w-full h-[75vh] md:h-[92vh] overflow-hidden bg-black">
           {heroBanners.map((banner, index) => (
             <div key={banner.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={`${BACKEND_URL}${banner.image_path}`} alt={banner.title} className="object-cover w-full h-full scale-105 transition-transform duration-10000" />
+              <img src={getAssetUrl(banner.image_path)} alt={banner.title} className="object-cover w-full h-full scale-105 transition-transform duration-10000" />
               
               <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
                 <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-6">
@@ -261,7 +260,7 @@ export default function Home() {
                 <div className="aspect-[3/4] w-full bg-gray-100 relative overflow-hidden">
                   {product.image_path ? (
                     <img 
-                      src={`${BACKEND_URL}${product.image_path}`} 
+                      src={getAssetUrl(product.image_path)} 
                       alt={product.name} 
                       className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700" 
                     />
@@ -387,7 +386,7 @@ export default function Home() {
         >
           {subBanners.length > 0 ? (
             <img 
-              src={subBanners[0].image_path.startsWith('http') ? subBanners[0].image_path : `${BACKEND_URL}${subBanners[0].image_path}`} 
+              src={getAssetUrl(subBanners[0].image_path)} 
               alt={subBanners[0].title || "HERCLO Sub Banner"} 
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
             />
@@ -427,7 +426,7 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {galleries.slice(0, 4).map((img) => (
                 <div key={img.id} className="relative aspect-[3/4] rounded-2xl overflow-hidden group bg-gray-800 border border-white/10">
-                  <img src={img.image_path.startsWith('http') ? img.image_path : `${BACKEND_URL}${img.image_path}`} alt={img.title} className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+                  <img src={getAssetUrl(img.image_path)} alt={img.title} className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
                   <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <p className="text-white font-bold text-sm md:text-base">{img.title}</p>
                   </div>
@@ -471,7 +470,7 @@ export default function Home() {
                   <div className="relative h-48 bg-gray-100 overflow-hidden">
                     {article.image_path ? (
                       <img 
-                        src={article.image_path.startsWith('http') ? article.image_path : `${BACKEND_URL}${article.image_path}`} 
+                        src={getAssetUrl(article.image_path)} 
                         alt={article.title} 
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -604,7 +603,7 @@ export default function Home() {
               <div className="flex gap-6 mb-8 border-b border-gray-100 pb-6">
                 <div className="w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden shrink-0">
                    {selectedProduct.image_path ? (
-                     <img src={`${BACKEND_URL}${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                      <img src={getAssetUrl(selectedProduct.image_path)} alt={selectedProduct.name} className="w-full h-full object-cover" />
                    ) : (<span className="text-[10px] text-gray-400 flex items-center justify-center h-full">No Image</span>)}
                 </div>
                 <div>

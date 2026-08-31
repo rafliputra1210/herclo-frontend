@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { getAssetUrl } from '../../lib/config';
 import Link from 'next/link';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import PublicHeader from '../components/PublicHeader';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Gallery {
   id: number;
@@ -126,7 +125,7 @@ export default function PublicGallery() {
                   className="break-inside-avoid relative rounded-2xl overflow-hidden group bg-gray-100 cursor-pointer"
                 >
                   <img 
-                    src={img.image_path.startsWith('http') ? img.image_path : `${BACKEND_URL}${img.image_path}`}
+                    src={getAssetUrl(img.image_path)}
                     alt={img.title} 
                     className="object-cover w-full h-full grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                   />
@@ -183,7 +182,7 @@ export default function PublicGallery() {
               className="relative max-w-5xl w-full max-h-full flex flex-col items-center"
             >
               <img 
-                src={selectedImage.image_path.startsWith('http') ? selectedImage.image_path : `${BACKEND_URL}${selectedImage.image_path}`} 
+                src={getAssetUrl(selectedImage.image_path)} 
                 alt={selectedImage.title} 
                 className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl"
               />

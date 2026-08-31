@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { getAssetUrl } from '../../../lib/config';
 import Barcode from 'react-barcode';
 import { useConfirm } from '../../components/ConfirmContext';
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Category {
   id: number;
@@ -213,7 +213,7 @@ export default function ProductManagement() {
     }
   };
 
-  const displayImageSrc = imagePreview || (existingImagePath ? (existingImagePath.startsWith('http') ? existingImagePath : `${BACKEND_URL}${existingImagePath}`) : null);
+  const displayImageSrc = imagePreview || (existingImagePath ? getAssetUrl(existingImagePath) : null);
 
   return (
     <div>
@@ -410,8 +410,8 @@ export default function ProductManagement() {
                     <td className="p-4 flex items-center gap-4">
                         <div className="w-12 h-16 rounded bg-gray-100 flex-shrink-0 overflow-hidden border">
                           {product.image_path ? (
-                            <img 
-                              src={product.image_path.startsWith('http') ? product.image_path : `${BACKEND_URL}${product.image_path}`} 
+                              <img 
+                              src={getAssetUrl(product.image_path)} 
                               alt={product.name} 
                               className="w-full h-full object-cover" 
                             />

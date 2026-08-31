@@ -4,10 +4,9 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '../../lib/axios';
+import { getAssetUrl } from '../../lib/config';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import PublicHeader from '../components/PublicHeader';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface Category { id: number; name: string; }
 interface Product { id: number; name: string; price: number; stock_quantity?: number; description?: string; image_path?: string; color?: string; category?: { name: string; }; }
@@ -131,9 +130,9 @@ function CollectionContent() {
               
               <div className="flex gap-6 mb-8 border-b border-gray-100 pb-6">
                 <div className="w-24 h-24 bg-gray-100 flex items-center justify-center">
-                   {selectedProduct.image_path ? (
-                     <img src={`${BACKEND_URL}${selectedProduct.image_path}`} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                   ) : (<span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">No Image</span>)}
+                    {selectedProduct.image_path ? (
+                      <img src={getAssetUrl(selectedProduct.image_path)} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                    ) : (<span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">No Image</span>)}
                 </div>
                 <div>
                   <h3 className="font-black text-xl mb-1 text-black leading-tight line-clamp-2">{selectedProduct.name}</h3>
@@ -386,7 +385,7 @@ function CollectionContent() {
                     {/* TINGGI GAMBAR: aspect-[3/4] agar gambar memanjang & tidak terlalu lebar */}
                     <div className="aspect-[3/4] w-full bg-gray-100 relative overflow-hidden mb-3">
                       {product.image_path ? (
-                        <img src={`${BACKEND_URL}${product.image_path}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <img src={getAssetUrl(product.image_path)} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px] uppercase font-bold tracking-widest">No Image</div>
                       )}

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { getAssetUrl } from '../../../lib/config';
 import { useConfirm } from '../../components/ConfirmContext';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 const MAX_BANNERS = 10;
 
 interface Banner {
@@ -291,7 +290,7 @@ export default function BannerManagement() {
                   {/* Preview Gambar Banner */}
                   <div className={`md:w-1/2 ${activeTab === 'hero' ? 'aspect-video' : 'aspect-[1280/420]'} md:h-auto bg-gray-900 relative`}>
                     <img 
-                      src={banner.image_path.startsWith('http') ? banner.image_path : `${BACKEND_URL}${banner.image_path}`} 
+                      src={getAssetUrl(banner.image_path)} 
                       alt={banner.title || 'Banner Image'} 
                       className="object-cover w-full h-full"
                     />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../../lib/axios';
+import { getAssetUrl } from '../../../lib/config';
 import { useConfirm } from '../../components/ConfirmContext';
 
 interface Article {
@@ -244,7 +245,7 @@ export default function ArticleManagement() {
                     <td className="p-4 text-gray-500">
                       {article.image_path ? (
                         <div className="w-12 h-12 rounded bg-gray-100 overflow-hidden">
-                          <img src={`${process.env.NEXT_PUBLIC_BACKEND_URL}${article.image_path}`} alt="Thumb" className="w-full h-full object-cover" />
+                          <img src={getAssetUrl(article.image_path)} alt="Thumb" className="w-full h-full object-cover" />
                         </div>
                       ) : (
                         <div className="w-12 h-12 rounded bg-gray-200 flex items-center justify-center text-xs text-gray-400">

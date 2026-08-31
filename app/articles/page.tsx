@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import api from '../../lib/axios';
+import { getAssetUrl } from '../../lib/config';
 import PublicHeader from '../components/PublicHeader';
 
 interface Article {
@@ -14,8 +15,6 @@ interface Article {
   is_published: boolean;
   created_at: string;
 }
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -83,7 +82,7 @@ export default function ArticlesPage() {
                 <div className="relative h-52 bg-gray-100 overflow-hidden">
                   {article.image_path ? (
                     <img
-                      src={`${BACKEND_URL}${article.image_path}`}
+                      src={getAssetUrl(article.image_path)}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

@@ -4,9 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { getAssetUrl } from '../../lib/config';
 import PublicHeader from '../components/PublicHeader';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 interface TeamMember {
   id: number;
@@ -75,7 +74,7 @@ export default function ProfilePage() {
           <div className="aspect-[4/5] md:aspect-square relative rounded-3xl overflow-hidden shadow-2xl group">
             {profile?.image_path ? (
               <img 
-                src={`${BACKEND_URL}${profile.image_path}`} 
+                src={getAssetUrl(profile.image_path)} 
                 alt="HERCLO Studio" 
                 className="w-full h-full object-cover transition-all duration-1000 ease-in-out transform group-hover:scale-105"
               />
@@ -108,7 +107,7 @@ export default function ProfilePage() {
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl mb-6 shadow-lg bg-gray-200">
                   {member.image_path ? (
                     <img 
-                      src={`${BACKEND_URL}${member.image_path}`} 
+                      src={getAssetUrl(member.image_path)} 
                       alt={member.name}
                       className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-105"
                     />
