@@ -23,13 +23,30 @@ export default function LoginPage() {
         password: dashboardCode 
       });
       
+      // Sanctum mengembalikan token sebagai "40|..." di root atau nested
+      const token: string | undefined =
+        res.data?.token ??
+        res.data?.data?.token ??
+        res.data?.access_token ??
+        res.data?.data?.access_token ??
+        res.data?.plainTextToken;
+      const userData = res.data?.user ?? res.data?.data?.user ?? res.data?.data;
+
+      if (!token) {
+        throw new Error('Token tidak ditemukan pada respons login.');
+      }
+
       // Simpan token ke localStorage agar sesi tetap aktif
-      localStorage.setItem('auth_token', res.data.token);
-      localStorage.setItem('herclo_token', res.data.token);
-      localStorage.setItem('herclo_user', JSON.stringify(res.data.user));
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('herclo_token', token);
+      if (userData) {
+        localStorage.setItem('herclo_user', JSON.stringify(userData));
+      } else if (res.data?.user) {
+        localStorage.setItem('herclo_user', JSON.stringify(res.data.user));
+      }
       
       // Arahkan ke halaman yang sesuai berdasarkan role
-      const user = res.data.user;
+      const user = userData ?? res.data.user;
       if (user?.role === 'admin' || user?.role === 'super_admin') {
         router.push('/admin');
       } else {

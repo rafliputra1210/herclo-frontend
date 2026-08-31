@@ -23,7 +23,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Mempertahankan logika autentikasi
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token =
+      localStorage.getItem('auth_token') ||
+      localStorage.getItem('herclo_token') ||
+      localStorage.getItem('token');
     if (!token) {
       const timer = setTimeout(() => router.replace('/login'), 0);
       return () => clearTimeout(timer);
@@ -31,18 +34,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     api.get('/user')
       .then((res) => {
-        const userData = res.data;
+        const userData = res.data?.data ?? res.data?.user ?? res.data;
         if (userData?.role !== 'admin' && userData?.role !== 'super_admin') {
           router.replace('/dashboard');
           return;
         }
         setUser(userData);
-        setLoading(false);
       })
       .catch((err) => {
         console.error('Session invalid:', err);
         localStorage.removeItem('auth_token');
+        localStorage.removeItem('herclo_token');
+        localStorage.removeItem('herclo_user');
+        localStorage.removeItem('token');
         router.replace('/login');
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }, [router]);
 
@@ -56,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       localStorage.removeItem('auth_token');
       localStorage.removeItem('herclo_token');
       localStorage.removeItem('herclo_user');
+      localStorage.removeItem('token');
       router.push('/login');
     }
   };

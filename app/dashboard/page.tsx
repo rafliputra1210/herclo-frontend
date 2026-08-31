@@ -60,12 +60,18 @@ export default function CustomerDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('herclo_token');
-    localStorage.removeItem('herclo_user');
-    router.push('/login');
+  const handleLogout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (e) {
+      console.error('Logout error:', e);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('herclo_token');
+      localStorage.removeItem('herclo_user');
+      router.push('/login');
+    }
   };
 
   if (loading) {
