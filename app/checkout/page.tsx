@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import api from '../../lib/axios';
+import { getAssetUrl } from '../../lib/config';
 import { useRouter } from 'next/navigation';
 import BackButton from '../components/BackButton';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -318,121 +317,142 @@ export default function CheckoutPage() {
           </div>
 
           {/* BAGIAN RINGKASAN PESANAN (SIDEBAR KANAN) */}
-          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm h-fit sticky top-24">
-            <h3 className="font-bold text-lg mb-4">Ringkasan Pesanan</h3>
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm sticky top-6 lg:top-24">
+              <div className="p-6">
+                <div className="flex justify-between items-start gap-4 mb-4">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 leading-none">Ringkasan Pesanan</h3>
+                    <p className="text-xs text-gray-500 mt-1.5">{cartItems.length} item di keranjang</p>
+                  </div>
+                  <span className="hidden lg:inline-flex items-center text-[11px] font-bold tracking-wide bg-gray-900 text-white px-2.5 py-1 rounded-full">
+                    {cartItems.length} ITEM
+                  </span>
+                </div>
 
-            <div className="space-y-4 mb-6 border-b border-gray-100 pb-6 max-h-64 overflow-y-auto pr-2">
-              {cartItems.map(item => (
-                <div key={item.id} className="flex gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-md border flex items-center justify-center shrink-0 overflow-hidden">
-                    {item.product.image_path ? (
-                      <img src={`${BACKEND_URL}${item.product.image_path}`} alt={item.product.name} className="w-full h-full object-cover" />
+                <div className={cartItems.length > 3 ? 'space-y-3 mb-6 max-h-[300px] overflow-y-auto pr-2 -mr-2 custom-scrollbar' : 'space-y-3 mb-6'}>
+                  {cartItems.length === 0 ? (
+                    <div className="border border-dashed border-gray-200 rounded-xl py-8 text-center bg-gray-50/50">
+                      <p className="text-sm text-gray-400">Keranjang kosong</p>
+                    </div>
+                  ) : (
+                    cartItems.map(item => (
+                      <div key={item.id} className="flex gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                        <div className="w-16 h-16 bg-white rounded-lg border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
+                          {item.product.image_path ? (
+                            <img src={getAssetUrl(item.product.image_path)} alt={item.product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] text-gray-400">No Image</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 py-0.5">
+                          <p className="font-semibold text-[13px] leading-snug text-gray-900 break-words" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.product.name}</p>
+                          <p className="text-xs text-gray-500 mt-1 truncate">Varian: {item.size} - {item.color}</p>
+                          <div className="flex justify-between items-center gap-2 mt-2">
+                            <span className="text-xs font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded-full whitespace-nowrap">Qty: {item.quantity}</span>
+                            <span className="font-bold text-[13px] text-gray-900 whitespace-nowrap text-right">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* FITUR KODE PROMO & VOUCHER */}
+                <div className="mb-6 border-b border-gray-100 pb-6">
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">Punya Kode Promo / Voucher?</label>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={promoCodeInput}
+                      onChange={(e) => setPromoCodeInput(e.target.value)}
+                      disabled={appliedPromo !== null}
+                      placeholder="MASUKKAN KODE..."
+                      className="flex-1 min-w-0 border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 uppercase text-sm font-bold placeholder:font-medium disabled:bg-gray-100 disabled:text-gray-500"
+                    />
+                    {appliedPromo ? (
+                      <button type="button" onClick={() => { setAppliedPromo(null); setDiscountAmount(0); setPromoCodeInput(''); }} className="shrink-0 px-4 bg-red-50 text-red-600 border border-red-200 font-bold rounded-lg text-sm hover:bg-red-100 transition-colors">
+                        Batal
+                      </button>
                     ) : (
-                      <span className="text-[10px] text-gray-400">Produk</span>
+                      <button type="button" onClick={handleApplyPromo} className="shrink-0 px-5 bg-black text-white font-bold rounded-lg text-sm hover:bg-gray-800 transition-colors whitespace-nowrap">
+                        Pakai
+                      </button>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-bold text-sm leading-tight text-gray-900">{item.product.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">Varian: {item.size} - {item.color}</p>
-                    <div className="flex justify-between items-center mt-1">
-                      <span className="text-xs font-semibold text-gray-600">Qty: {item.quantity}</span>
-                      <span className="font-bold text-sm text-black">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</span>
+
+                  {/* DAFTAR VOUCHER AKTIF YANG BISA DIKLIK KONSUMEN */}
+                  {availablePromos.length > 0 && !appliedPromo && (
+                    <div className="space-y-2 pt-1">
+                      <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Voucher Tersedia — Klik untuk pakai:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {availablePromos.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setPromoCodeInput(p.code);
+                              api.post('/promo/validate', { code: p.code, total_amount: totalAmount })
+                                .then(res => {
+                                  setDiscountAmount(res.data.discount_amount);
+                                  setAppliedPromo(res.data.promo_code);
+                                })
+                                .catch(err => alert(err.response?.data?.message || 'Kode promo belum memenuhi syarat.'));
+                            }}
+                            className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>🎟️</span>
+                            <span>{p.code}</span>
+                            <span className="text-[10px] text-emerald-600 font-medium whitespace-nowrap">
+                              ({p.type === 'persen' ? `${p.value}%` : `Rp ${new Intl.NumberFormat('id-ID').format(p.value)}`})
+                            </span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                  )}
+                  {appliedPromo && (
+                    <p className="text-xs text-emerald-600 font-semibold mt-2 flex items-center gap-1">✓ Voucher <span className="font-black">{appliedPromo}</span> diterapkan</p>
+                  )}
+                </div>
+
+                {/* RINCIAN HARGA */}
+                <div className="space-y-3 mb-6 border-b border-gray-100 pb-6 text-sm">
+                  <div className="flex justify-between gap-4 text-gray-600">
+                    <span className="shrink-0">Subtotal Produk</span>
+                    <span className="font-medium text-gray-900 whitespace-nowrap text-right">Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between gap-4 text-emerald-600 font-bold">
+                      <span className="truncate pr-2">Diskon Promo ({appliedPromo})</span>
+                      <span className="whitespace-nowrap shrink-0">- Rp {new Intl.NumberFormat('id-ID').format(discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4 text-gray-600">
+                    <span>Biaya Layanan</span>
+                    <span className="text-emerald-600 font-semibold whitespace-nowrap">Gratis</span>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* FITUR KODE PROMO & VOUCHER */}
-            <div className="mb-6 border-b border-gray-100 pb-6">
-              <label className="block text-sm font-semibold mb-2">Punya Kode Promo / Voucher?</label>
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={promoCodeInput}
-                  onChange={(e) => setPromoCodeInput(e.target.value)}
-                  disabled={appliedPromo !== null}
-                  placeholder="MASUKKAN KODE..."
-                  className="flex-1 border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500 uppercase text-sm font-bold"
-                />
-                {appliedPromo ? (
-                  <button type="button" onClick={() => { setAppliedPromo(null); setDiscountAmount(0); setPromoCodeInput(''); }} className="px-4 bg-red-100 text-red-600 font-bold rounded-lg text-sm hover:bg-red-200 transition-colors">
-                    Batal
-                  </button>
-                ) : (
-                  <button type="button" onClick={handleApplyPromo} className="px-4 bg-black text-white font-bold rounded-lg text-sm hover:bg-gray-800 transition-colors">
-                    Pakai
-                  </button>
-                )}
-              </div>
-
-              {/* DAFTAR VOUCHER AKTIF YANG BISA DIKLIK KONSUMEN */}
-              {availablePromos.length > 0 && !appliedPromo && (
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Voucher Tersedia (Klik 1x untuk Pakai):</p>
-                  <div className="flex flex-wrap gap-2">
-                    {availablePromos.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => {
-                          setPromoCodeInput(p.code);
-                          api.post('/promo/validate', { code: p.code, total_amount: totalAmount })
-                            .then(res => {
-                              setDiscountAmount(res.data.discount_amount);
-                              setAppliedPromo(res.data.promo_code);
-                            })
-                            .catch(err => alert(err.response?.data?.message || 'Kode promo belum memenuhi syarat.'));
-                        }}
-                        className="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <span>🎟️</span>
-                        <span>{p.code}</span>
-                        <span className="text-[10px] text-emerald-600 font-medium">
-                          ({p.type === 'persen' ? `${p.value}%` : `Rp ${new Intl.NumberFormat('id-ID').format(p.value)}`})
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex justify-between items-center gap-4 mb-6 text-gray-900">
+                  <span className="font-bold text-base shrink-0">Total Tagihan</span>
+                  <span className="font-black text-xl lg:text-2xl whitespace-nowrap text-right leading-none">Rp {new Intl.NumberFormat('id-ID').format(finalTotal)}</span>
                 </div>
-              )}
-            </div>
 
-            {/* RINCIAN HARGA */}
-            <div className="space-y-3 mb-6 border-b border-gray-100 pb-6 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal Produk</span>
-                <span>Rp {new Intl.NumberFormat('id-ID').format(totalAmount)}</span>
-              </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Diskon Promo ({appliedPromo})</span>
-                  <span>- Rp {new Intl.NumberFormat('id-ID').format(discountAmount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-gray-500">
-                <span>Biaya Layanan Midtrans</span>
-                <span className="text-emerald-500 font-semibold">Gratis</span>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !isFormValid}
+                  className="w-full bg-black text-white py-4 rounded-xl font-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-[15px]"
+                >
+                  {isSubmitting ? 'Memproses Pesanan...' : (
+                    <>Bayar dengan <span className="bg-white text-black px-2.5 py-0.5 rounded-md text-sm font-black leading-none">Midtrans</span></>
+                  )}
+                </button>
+                <p className="text-center text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
+                  🔒 Pembayaran aman & terenkripsi
+                </p>
               </div>
             </div>
-
-            <div className="flex justify-between font-black text-2xl mb-8 text-gray-900">
-              <span>Total Tagihan</span>
-              <span>Rp {new Intl.NumberFormat('id-ID').format(finalTotal)}</span>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting || !isFormValid}
-              className="w-full bg-black text-white py-4 rounded-xl font-black hover:bg-gray-800 disabled:bg-gray-300 disabled:text-gray-500 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-lg"
-            >
-              {isSubmitting ? 'Memproses Pesanan...' : (
-                <>Bayar dengan <span className="bg-white text-black px-2.5 py-0.5 rounded text-sm font-black ml-1">Midtrans</span></>
-              )}
-            </button>
-            <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
-              🔒 Pembayaran aman & terenkripsi
-            </p>
           </div>
 
         </form>
