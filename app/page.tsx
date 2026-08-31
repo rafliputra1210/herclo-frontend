@@ -120,19 +120,36 @@ export default function Home() {
       {/* --- PUBLIC HEADER --- */}
       <PublicHeader />
 
-      {/* --- HERO SECTION (BANNER UTAMA SLIDER) --- */}
+      {/* --- HERO SECTION (BANNER UTAMA SLIDER 16:9) --- */}
       {heroBanners.length > 0 ? (
-        <section className="relative w-full h-[75vh] md:h-[92vh] overflow-hidden bg-black">
+        <section className="relative w-full aspect-[16/9] overflow-hidden bg-black">
           {heroBanners.map((banner, index) => (
-            <div key={banner.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img src={getAssetUrl(banner.image_path)} alt={banner.title} className="object-cover w-full h-full scale-105 transition-transform duration-10000" />
+            <div 
+              key={banner.id} 
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              }`}
+            >
+              <img 
+                src={getAssetUrl(banner.image_path)} 
+                alt={banner.title} 
+                className="object-cover object-center w-full h-full" 
+              />
               
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-6">
-                <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] rounded-full mb-6">
+              {/* Overlay gradien halus agar teks terbaca jelas */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+              
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-3 sm:px-6">
+                <span className="inline-block px-2.5 py-0.5 sm:px-4 sm:py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] rounded-full mb-1.5 sm:mb-3 md:mb-5">
                   HERCLO Premium Apparel
                 </span>
                 
-                <motion.h2 initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tighter uppercase leading-none max-w-5xl">
+                <motion.h2 
+                  initial={{ y: 15, opacity: 0 }} 
+                  animate={{ y: 0, opacity: 1 }} 
+                  transition={{ delay: 0.2 }} 
+                  className="text-lg sm:text-3xl md:text-6xl lg:text-7xl font-black mb-2 sm:mb-4 md:mb-6 tracking-tighter uppercase leading-tight md:leading-none max-w-5xl px-2 drop-shadow-md line-clamp-2"
+                >
                   {banner.title}
                 </motion.h2>
 
@@ -142,7 +159,7 @@ export default function Home() {
                     animate={{ scale: 1, opacity: 1 }} 
                     transition={{ delay: 0.4 }} 
                     href={banner.link_url} 
-                    className="px-10 py-4 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_25px_rgba(163,230,53,0.5)] text-xs md:text-sm flex items-center gap-2"
+                    className="px-4 py-1.5 sm:px-7 sm:py-2.5 md:px-10 md:py-3.5 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(163,230,53,0.4)] text-[9px] sm:text-xs md:text-sm flex items-center gap-1.5 sm:gap-2"
                   >
                     <span>Eksplorasi Koleksi</span>
                     <span>↗</span>
@@ -154,12 +171,14 @@ export default function Home() {
 
           {/* Indicators dots jika banner > 1 */}
           {heroBanners.length > 1 && (
-            <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center gap-2">
+            <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 left-0 right-0 z-20 flex justify-center gap-1.5 md:gap-2">
               {heroBanners.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentBanner(i)}
-                  className={`h-1.5 rounded-full transition-all duration-500 ${i === currentBanner ? 'w-10 bg-lime-400' : 'w-2 bg-white/40 hover:bg-white'}`}
+                  className={`h-1 md:h-1.5 rounded-full transition-all duration-500 ${
+                    i === currentBanner ? 'w-5 sm:w-8 md:w-10 bg-lime-400' : 'w-1.5 md:w-2 bg-white/40 hover:bg-white'
+                  }`}
                   aria-label={`Slide ${i + 1}`}
                 />
               ))}
@@ -167,15 +186,15 @@ export default function Home() {
           )}
         </section>
       ) : (
-        <section className="bg-black text-white h-[75vh] md:h-[92vh] flex flex-col items-center justify-center text-center px-8 relative overflow-hidden">
+        <section className="bg-black text-white w-full aspect-[16/9] flex flex-col items-center justify-center text-center px-4 md:px-8 relative overflow-hidden">
           <div className="absolute w-[600px] h-[600px] bg-lime-400/15 rounded-full blur-[120px] -top-20 -left-20 pointer-events-none"></div>
           <div className="absolute w-[400px] h-[400px] bg-white/10 rounded-full blur-[100px] -bottom-20 -right-20 pointer-events-none"></div>
           
-          <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] mb-6 relative z-10 rounded-full">
+          <span className="inline-block px-2.5 py-0.5 sm:px-4 sm:py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] mb-2 sm:mb-4 md:mb-6 relative z-10 rounded-full">
             Urban Streetwear Redefined
           </span>
           
-          <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter mb-8 leading-none relative z-10 uppercase">
+          <h1 className="text-xl sm:text-4xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-3 sm:mb-6 md:mb-8 leading-tight md:leading-none relative z-10 uppercase">
             Do MORE <br/> 
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-white to-gray-400">
               BE MORE.
@@ -185,7 +204,7 @@ export default function Home() {
           <div className="flex gap-4 relative z-10">
             <a 
               href="#koleksi" 
-              className="px-10 py-4 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all text-xs shadow-[0_0_25px_rgba(163,230,53,0.4)]"
+              className="px-4 py-1.5 sm:px-7 sm:py-2.5 md:px-10 md:py-3.5 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all text-[9px] sm:text-xs shadow-[0_0_20px_rgba(163,230,53,0.4)]"
             >
               Belanja Sekarang ↗
             </a>

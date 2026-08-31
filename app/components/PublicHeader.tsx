@@ -112,25 +112,25 @@ export default function PublicHeader() {
         </div>
       </div>
 
-      <header className="bg-black border-b border-zinc-800 px-4 md:px-8 py-3 flex justify-between items-center sticky top-0 z-40 shadow-xs">
-        <div className="flex items-center gap-3 md:gap-6">
+      <header className="bg-black border-b border-zinc-800 px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 flex justify-between items-center sticky top-0 z-40 shadow-xs">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-6 min-w-0">
           {pathname !== '/' && (
-            <BackButton label="" className="p-2!" />
+            <BackButton label="" className="p-1.5 sm:p-2!" />
           )}
           
           {/* Tombol Hamburger (Khusus Mobile) */}
           <button 
             onClick={() => setIsSidebarOpen(true)}
-            className="md:hidden text-white hover:bg-zinc-800 p-2 rounded-lg transition-colors focus:outline-none"
+            className="md:hidden text-white hover:bg-zinc-800 p-1.5 sm:p-2 rounded-lg transition-colors focus:outline-none shrink-0"
             aria-label="Buka Menu Utama"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           </button>
           
           <Link href="/" className="flex items-center shrink-0">
-            <img src="/LOGO HERCLO3.PNG" alt="HERCLO" className="h-9 md:h-10 w-auto object-contain" />
+            <img src="/LOGO HERCLO3.PNG" alt="HERCLO" className="h-7 sm:h-8 md:h-10 w-auto object-contain" />
           </Link>
         </div>
 
@@ -145,8 +145,8 @@ export default function PublicHeader() {
           <Link href="/contact" className={`hover:text-lime-500 transition-colors ${pathname === '/contact' ? 'text-white font-black underline underline-offset-4 decoration-lime-400' : 'text-zinc-300'}`}>Kontak</Link>
         </nav>
         
-        {/* KOLOM PENCARIAN & FITUR KANAN DESKTOP */}
-        <div className="flex items-center gap-3 lg:gap-4">
+        {/* KOLOM PENCARIAN & FITUR KANAN */}
+        <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-4 shrink-0">
           <form onSubmit={handleSearch} className="hidden xl:flex relative w-48 lg:w-56">
             <input 
               type="text" 
@@ -162,11 +162,11 @@ export default function PublicHeader() {
             </button>
           </form>
 
-          <Link href="/cart" className="p-2 hover:bg-zinc-800 rounded-full transition-colors relative" title="Keranjang Belanja">
-            <span className="text-lg">🛒</span>
+          <Link href="/cart" className="p-1.5 sm:p-2 hover:bg-zinc-800 rounded-full transition-colors relative text-base sm:text-lg shrink-0" title="Keranjang Belanja">
+            <span>🛒</span>
           </Link>
 
-          <Link href="/login" className="px-4 py-2 bg-lime-400 text-black font-black text-xs uppercase tracking-wider rounded-full hover:bg-lime-500 transition-colors shadow-xs">
+          <Link href="/login" className="px-3 py-1.5 sm:px-4 sm:py-2 bg-lime-400 text-black font-black text-[10px] sm:text-xs uppercase tracking-wider rounded-full hover:bg-lime-500 transition-colors shadow-xs shrink-0">
             Login
           </Link>
         </div>
