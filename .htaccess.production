@@ -6,5 +6,11 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Semua route diarahkan ke index.html
+# Fallback untuk dynamic route articles/[slug] (CSR)
+RewriteCond %{REQUEST_URI} ^/articles/[^/]+/?$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^articles/[^/]+/?$ /articles/placeholder/index.html [L]
+
+# Semua route lain ke index.html
 RewriteRule ^ index.html [L]
