@@ -4,6 +4,7 @@ import { API_URL } from './config';
 const api = axios.create({
     baseURL: API_URL,
     timeout: 10000,
+    withCredentials: true, // <-- WAJIB ADA: Agar cookie/session lintas subdomain diizinkan
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

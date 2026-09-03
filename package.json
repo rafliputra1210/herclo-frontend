@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "cp .htaccess.production out/.htaccess; echo \"postbuild: .htaccess copied\"",
+    "postbuild": "node -e \"require('fs').copyFileSync('.htaccess.production', 'out/.htaccess'); console.log('postbuild: .htaccess copied')\"",
     "start": "NODE_ENV=production node server.js",
     "lint": "eslint"
   },

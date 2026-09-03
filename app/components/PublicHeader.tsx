@@ -130,7 +130,7 @@ export default function PublicHeader() {
           </button>
           
           <Link href="/" className="flex items-center shrink-0">
-            <img src="/LOGO HERCLO3.PNG" alt="HERCLO" className="h-7 sm:h-8 md:h-10 w-auto object-contain" />
+            <img src="/LOGO HERCLO3.png" alt="HERCLO" className="h-7 sm:h-8 md:h-10 w-auto object-contain" />
           </Link>
         </div>
 

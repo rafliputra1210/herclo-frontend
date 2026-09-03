@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import Barcode from 'react-barcode';
 import api from '../../../lib/axios';
 
@@ -13,8 +13,13 @@ export default function InventoryScannerPage() {
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
   const [lastScanned, setLastScanned] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const inputRef = useRef<HTMLInputElement>(null);
+  const isProcessingRef = useRef(false);
+  isProcessingRef.current = isProcessing;
 
   // Fokuskan input jika menggunakan mode fisik
   useEffect(() => {
@@ -23,48 +28,76 @@ export default function InventoryScannerPage() {
     }
   }, [action, scanMode]);
 
-  // Inisialisasi Kamera Scanner
+  // Inisialisasi Kamera Scanner (Auto Start langsung tanpa tombol tersembunyi)
   useEffect(() => {
-    let scanner: Html5QrcodeScanner | null = null;
+    let html5QrCode: Html5Qrcode | null = null;
+    let isCancelled = false;
 
     if (scanMode === 'kamera') {
-      // Setup scanner (Mendukung 1D Barcode & QR Code)
-      scanner = new Html5QrcodeScanner(
-        "reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 300, height: 100 } // Bentuk kotak memanjang (ideal untuk Barcode 1D)
-        },
-        false
-      );
+      setCameraLoading(true);
+      setCameraError(null);
 
-      scanner.render(
-        (decodedText) => {
-          // Ketika barcode berhasil terbaca oleh kamera
-          if (!isProcessing) {
-            setScanInput(decodedText);
-            processScanApi(decodedText);
-            
-            // Jeda sejenak agar kamera tidak membaca barcode yang sama berkali-kali
-            scanner?.pause(true);
-            setTimeout(() => {
-              scanner?.resume();
-            }, 2000); 
+      const startScanner = async () => {
+        try {
+          // Tunggu DOM elemen #reader siap
+          await new Promise((r) => setTimeout(r, 100));
+          if (isCancelled) return;
+
+          const readerElem = document.getElementById('reader');
+          if (!readerElem) return;
+
+          html5QrCode = new Html5Qrcode('reader');
+
+          await html5QrCode.start(
+            { facingMode: 'environment' },
+            {
+              fps: 15,
+              qrbox: { width: 280, height: 120 },
+              aspectRatio: 1.333333,
+            },
+            (decodedText) => {
+              if (!isProcessingRef.current) {
+                setScanInput(decodedText);
+                processScanApi(decodedText);
+              }
+            },
+            () => {
+              // Ignore scan frame search noise
+            }
+          );
+
+          if (!isCancelled) {
+            setCameraLoading(false);
           }
-        },
-        (error) => {
-          // Abaikan error saat kamera sedang mencari barcode
+        } catch (err: any) {
+          if (!isCancelled) {
+            console.error('Kamera error:', err);
+            setCameraLoading(false);
+            setCameraError(
+              err?.name === 'NotAllowedError' || err?.message?.includes('Permission')
+                ? 'Izin kamera ditolak. Silakan izinkan akses kamera di browser Anda lalu klik Coba Lagi.'
+                : 'Kamera tidak dapat diakses atau sedang digunakan oleh aplikasi lain.'
+            );
+          }
         }
-      );
+      };
+
+      startScanner();
     }
 
-    // Bersihkan memori kamera saat komponen ditutup atau ganti mode
     return () => {
-      if (scanner) {
-        scanner.clear().catch(error => console.error("Gagal mematikan kamera", error));
+      isCancelled = true;
+      if (html5QrCode) {
+        if (html5QrCode.isScanning) {
+          html5QrCode.stop().then(() => {
+            try { html5QrCode?.clear(); } catch {}
+          }).catch(() => {});
+        } else {
+          try { html5QrCode.clear(); } catch {}
+        }
       }
     };
-  }, [scanMode, action]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [scanMode, retryCount]);
 
   // Fungsi Pemroses API (Digunakan oleh Kamera & Form Manual)
   const processScanApi = async (skuCode: string) => {
@@ -167,9 +200,41 @@ export default function InventoryScannerPage() {
 
         {/* INPUT KAMERA */}
         {scanMode === 'kamera' && (
-          <div className="w-full overflow-hidden rounded-xl border-2 border-black bg-black">
-            {/* Tempat kamera akan dirender oleh html5-qrcode */}
-            <div id="reader" className="w-full"></div>
+          <div className="space-y-3">
+            <div className="relative w-full overflow-hidden rounded-xl border-2 border-zinc-900 bg-zinc-950 min-h-[260px] flex items-center justify-center">
+              {/* Tempat kamera akan dirender oleh html5-qrcode */}
+              <div id="reader" className="w-full h-full [&_video]:w-full [&_video]:h-auto [&_video]:object-cover [&_video]:rounded-lg"></div>
+
+              {/* Status Loading Kamera */}
+              {cameraLoading && !cameraError && (
+                <div className="absolute inset-0 bg-zinc-950/90 flex flex-col items-center justify-center text-white p-4 text-center z-10">
+                  <div className="w-8 h-8 border-3 border-lime-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <p className="text-sm font-bold text-zinc-200">Menghubungkan ke Kamera...</p>
+                  <p className="text-xs text-zinc-400 mt-1">Harap izinkan akses kamera jika browser memintanya.</p>
+                </div>
+              )}
+
+              {/* Status Error Izin Kamera */}
+              {cameraError && (
+                <div className="absolute inset-0 bg-zinc-950 flex flex-col items-center justify-center text-white p-6 text-center z-10">
+                  <div className="w-12 h-12 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-3 text-xl font-black">
+                    📷
+                  </div>
+                  <p className="text-sm font-bold text-white mb-1">Akses Kamera Bermasalah</p>
+                  <p className="text-xs text-zinc-400 max-w-xs mb-4">{cameraError}</p>
+                  <button
+                    onClick={() => setRetryCount(c => c + 1)}
+                    className="px-4 py-2 bg-lime-400 text-black font-bold text-xs rounded-lg hover:bg-lime-300 transition-colors cursor-pointer"
+                  >
+                    🔄 Coba Buka Kamera Lagi
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <p className="text-[11px] text-zinc-500 text-center font-medium">
+              💡 Pastikan pencahayaan cukup dan posisikan barcode di tengah kotak kamera.
+            </p>
           </div>
         )}
 
