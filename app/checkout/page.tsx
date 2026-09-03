@@ -121,7 +121,32 @@ export default function CheckoutPage() {
 
   // Hitung Total Belanja & Diskon
   const totalAmount = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  const finalTotal = totalAmount - discountAmount;
+  const finalTotal = Math.max(0, totalAmount - discountAmount);
+
+  const handleRemoveItem = (itemId: number) => {
+    const updated = cartItems.filter(item => item.id !== itemId);
+    setCartItems(updated);
+    localStorage.setItem('herclo_cart', JSON.stringify(updated));
+    if (updated.length === 0) {
+      alert('Semua barang telah dihapus dari keranjang.');
+      router.push('/');
+    }
+  };
+
+  const handleUpdateQty = (itemId: number, newQty: number) => {
+    if (newQty <= 0) {
+      handleRemoveItem(itemId);
+      return;
+    }
+    const updated = cartItems.map(item => {
+      if (item.id === itemId) {
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    });
+    setCartItems(updated);
+    localStorage.setItem('herclo_cart', JSON.stringify(updated));
+  };
 
   // 4. Fungsi Validasi Kode Promo
   const handleApplyPromo = async () => {
@@ -337,7 +362,7 @@ export default function CheckoutPage() {
                     </div>
                   ) : (
                     cartItems.map(item => (
-                      <div key={item.id} className="flex gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+                      <div key={item.id} className="flex gap-3 p-3 bg-gray-50 border border-gray-100 rounded-xl relative group">
                         <div className="w-16 h-16 bg-white rounded-lg border border-gray-200 flex items-center justify-center shrink-0 overflow-hidden">
                           {item.product.image_path ? (
                             <img src={getAssetUrl(item.product.image_path)} alt={item.product.name} className="w-full h-full object-cover" />
@@ -346,10 +371,38 @@ export default function CheckoutPage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0 py-0.5">
-                          <p className="font-semibold text-[13px] leading-snug text-gray-900 break-words" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.product.name}</p>
-                          <p className="text-xs text-gray-500 mt-1 truncate">Varian: {item.size} - {item.color}</p>
+                          <div className="flex justify-between items-start gap-1">
+                            <p className="font-semibold text-[13px] leading-snug text-gray-900 break-words line-clamp-2">{item.product.name}</p>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveItem(item.id)}
+                              className="text-gray-400 hover:text-red-500 font-bold text-xs p-1 leading-none transition-colors cursor-pointer"
+                              title="Hapus barang ini dari checkout"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">Varian: {item.size || '-'} - {item.color || '-'}</p>
                           <div className="flex justify-between items-center gap-2 mt-2">
-                            <span className="text-xs font-semibold text-gray-600 bg-white border border-gray-200 px-2 py-0.5 rounded-full whitespace-nowrap">Qty: {item.quantity}</span>
+                            <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden shadow-2xs">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateQty(item.id, item.quantity - 1)}
+                                className="w-6 h-6 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-100 text-xs transition-colors"
+                                title="Kurangi qty"
+                              >
+                                -
+                              </button>
+                              <span className="w-6 text-center text-xs font-bold text-gray-900">{item.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateQty(item.id, item.quantity + 1)}
+                                className="w-6 h-6 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-100 text-xs transition-colors"
+                                title="Tambah qty"
+                              >
+                                +
+                              </button>
+                            </div>
                             <span className="font-bold text-[13px] text-gray-900 whitespace-nowrap text-right">Rp {new Intl.NumberFormat('id-ID').format(item.product.price * item.quantity)}</span>
                           </div>
                         </div>

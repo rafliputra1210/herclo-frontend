@@ -15,9 +15,49 @@ interface Article { id: number; title: string; slug: string; content: string; im
 interface Testimonial { id: number; customer_name: string; content: string; rating: number; is_featured: boolean; }
 interface Banner { id: number; title: string; image_path: string; link_url: string; is_active: boolean; type?: 'hero' | 'sub'; }
 
+const getColorHex = (colorName: string): string => {
+  const map: { [key: string]: string } = {
+    'hitam': '#1a1a1a',
+    'black': '#1a1a1a',
+    'jet black': '#0a0a0a',
+    'putih': '#ffffff',
+    'white': '#ffffff',
+    'abu-abu': '#9ca3af',
+    'abu': '#9ca3af',
+    'grey': '#9ca3af',
+    'gray': '#9ca3af',
+    'navy': '#1e3a8a',
+    'navy blue': '#1e3a8a',
+    'sage green': '#84a98c',
+    'sage': '#84a98c',
+    'maroon': '#800000',
+    'cream': '#fef3c7',
+    'krem': '#fef3c7',
+    'cokelat': '#78350f',
+    'brown': '#78350f',
+    'army': '#4d5d53',
+    'hijau army': '#4d5d53',
+    'lilac': '#c084fc',
+    'beige': '#e6d5b8',
+    'merah': '#ef4444',
+    'red': '#ef4444',
+    'biru': '#3b82f6',
+    'blue': '#3b82f6',
+    'hijau': '#22c55e',
+    'green': '#22c55e',
+    'kuning': '#eab308',
+    'yellow': '#eab308',
+    'pink': '#ec4899',
+    'merah muda': '#ec4899',
+    'standard': '#4b5563'
+  };
+  const lower = (colorName || '').trim().toLowerCase();
+  return map[lower] || lower;
+};
+
 export default function Home() {
   const router = useRouter();
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -26,21 +66,38 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [emailInput, setEmailInput] = useState('');
-  
+
   // State Interaksi
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [variant, setVariant] = useState({ size: 'M', color: 'Hitam', qty: 1 });
 
   const openModal = (product: Product) => {
     setSelectedProduct(product);
-    setVariant({ size: 'M', color: 'Hitam', qty: 1 });
+    const initialColor = product.color ? product.color.split(',')[0].trim() : 'Hitam';
+    setVariant({ size: 'M', color: initialColor || 'Hitam', qty: 1 });
   };
 
   const handleBuy = (isDirectBuy: boolean) => {
     if (!selectedProduct) return;
     try {
+      if (isDirectBuy) {
+        // Direct buy: checkout produk yang baru saja dipilih
+        const directCart = [{
+          id: Date.now() + Math.random(),
+          product: selectedProduct,
+          quantity: variant.qty,
+          size: variant.size,
+          color: variant.color
+        }];
+        localStorage.setItem('herclo_cart', JSON.stringify(directCart));
+        setSelectedProduct(null);
+        router.push('/checkout');
+        return;
+      }
+
+      // Jika + Keranjang: tambahkan ke keranjang belanja
       const existingCart = JSON.parse(localStorage.getItem('herclo_cart') || '[]');
-      const existingItemIndex = existingCart.findIndex((item: any) => 
+      const existingItemIndex = existingCart.findIndex((item: any) =>
         item.product.id === selectedProduct.id && item.size === variant.size && item.color === variant.color
       );
       if (existingItemIndex >= 0) {
@@ -50,9 +107,7 @@ export default function Home() {
       }
       localStorage.setItem('herclo_cart', JSON.stringify(existingCart));
       setSelectedProduct(null);
-      
-      if (isDirectBuy) router.push('/checkout');
-      else alert('Berhasil dimasukkan ke keranjang!');
+      alert('Berhasil dimasukkan ke keranjang!');
     } catch (error) {
       alert('Gagal menyimpan keranjang.');
     }
@@ -116,7 +171,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white font-sans text-gray-900 selection:bg-lime-400 selection:text-black">
-      
+
       {/* --- PUBLIC HEADER --- */}
       <PublicHeader />
 
@@ -124,41 +179,40 @@ export default function Home() {
       {heroBanners.length > 0 ? (
         <section className="relative w-full aspect-[16/9] overflow-hidden bg-black">
           {heroBanners.map((banner, index) => (
-            <div 
-              key={banner.id} 
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
+            <div
+              key={banner.id}
+              className={`absolute inset-0 transition-opacity duration-1000 ${index === currentBanner ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                }`}
             >
-              <img 
-                src={getAssetUrl(banner.image_path)} 
-                alt={banner.title} 
-                className="object-cover object-center w-full h-full" 
+              <img
+                src={getAssetUrl(banner.image_path)}
+                alt={banner.title}
+                className="object-cover object-center w-full h-full"
               />
-              
+
               {/* Overlay gradien halus agar teks terbaca jelas */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
-              
+
               <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-3 sm:px-6">
                 <span className="inline-block px-2.5 py-0.5 sm:px-4 sm:py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] rounded-full mb-1.5 sm:mb-3 md:mb-5">
                   HERCLO Premium Apparel
                 </span>
-                
-                <motion.h2 
-                  initial={{ y: 15, opacity: 0 }} 
-                  animate={{ y: 0, opacity: 1 }} 
-                  transition={{ delay: 0.2 }} 
+
+                <motion.h2
+                  initial={{ y: 15, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
                   className="text-lg sm:text-3xl md:text-6xl lg:text-7xl font-black mb-2 sm:mb-4 md:mb-6 tracking-tighter uppercase leading-tight md:leading-none max-w-5xl px-2 drop-shadow-md line-clamp-2"
                 >
                   {banner.title}
                 </motion.h2>
 
                 {banner.link_url && (
-                  <motion.a 
-                    initial={{ scale: 0.9, opacity: 0 }} 
-                    animate={{ scale: 1, opacity: 1 }} 
-                    transition={{ delay: 0.4 }} 
-                    href={banner.link_url} 
+                  <motion.a
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    href={banner.link_url}
                     className="px-4 py-1.5 sm:px-7 sm:py-2.5 md:px-10 md:py-3.5 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(163,230,53,0.4)] text-[9px] sm:text-xs md:text-sm flex items-center gap-1.5 sm:gap-2"
                   >
                     <span>Eksplorasi Koleksi</span>
@@ -176,9 +230,8 @@ export default function Home() {
                 <button
                   key={i}
                   onClick={() => setCurrentBanner(i)}
-                  className={`h-1 md:h-1.5 rounded-full transition-all duration-500 ${
-                    i === currentBanner ? 'w-5 sm:w-8 md:w-10 bg-lime-400' : 'w-1.5 md:w-2 bg-white/40 hover:bg-white'
-                  }`}
+                  className={`h-1 md:h-1.5 rounded-full transition-all duration-500 ${i === currentBanner ? 'w-5 sm:w-8 md:w-10 bg-lime-400' : 'w-1.5 md:w-2 bg-white/40 hover:bg-white'
+                    }`}
                   aria-label={`Slide ${i + 1}`}
                 />
               ))}
@@ -189,21 +242,21 @@ export default function Home() {
         <section className="bg-black text-white w-full aspect-[16/9] flex flex-col items-center justify-center text-center px-4 md:px-8 relative overflow-hidden">
           <div className="absolute w-[600px] h-[600px] bg-lime-400/15 rounded-full blur-[120px] -top-20 -left-20 pointer-events-none"></div>
           <div className="absolute w-[400px] h-[400px] bg-white/10 rounded-full blur-[100px] -bottom-20 -right-20 pointer-events-none"></div>
-          
+
           <span className="inline-block px-2.5 py-0.5 sm:px-4 sm:py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-lime-400 text-[8px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] mb-2 sm:mb-4 md:mb-6 relative z-10 rounded-full">
             Urban Streetwear Redefined
           </span>
-          
+
           <h1 className="text-xl sm:text-4xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-3 sm:mb-6 md:mb-8 leading-tight md:leading-none relative z-10 uppercase">
-            Do MORE <br/> 
+            Do MORE <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-white to-gray-400">
               BE MORE.
             </span>
           </h1>
 
           <div className="flex gap-4 relative z-10">
-            <a 
-              href="#koleksi" 
+            <a
+              href="#koleksi"
               className="px-4 py-1.5 sm:px-7 sm:py-2.5 md:px-10 md:py-3.5 bg-lime-400 text-black font-black uppercase tracking-widest rounded-full hover:bg-white hover:scale-105 transition-all text-[9px] sm:text-xs shadow-[0_0_20px_rgba(163,230,53,0.4)]"
             >
               Belanja Sekarang ↗
@@ -274,14 +327,14 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
             {products.slice(0, 8).map((product) => (
               <motion.div key={product.id} whileHover={{ y: -6 }} className="bg-white group cursor-pointer flex flex-col h-full rounded-2xl overflow-hidden border border-gray-100 hover:border-gray-300 hover:shadow-xl transition-all duration-300">
-                
+
                 {/* CONTAINER GAMBAR PRODUK */}
                 <div className="aspect-[3/4] w-full bg-gray-100 relative overflow-hidden">
                   {product.image_path ? (
-                    <img 
-                      src={getAssetUrl(product.image_path)} 
-                      alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700" 
+                    <img
+                      src={getAssetUrl(product.image_path)}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px] md:text-xs font-bold uppercase tracking-widest">No Image</div>
@@ -293,49 +346,47 @@ export default function Home() {
                       {product.category?.name || 'Streetwear'}
                     </span>
                   </div>
-                  
+
                   {/* Quick Add Overlay (PC) */}
                   <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 items-center justify-center p-4 backdrop-blur-[2px]">
-                    <button 
-                      onClick={() => openModal(product)} 
+                    <button
+                      onClick={() => openModal(product)}
                       className="w-full bg-lime-400 text-black py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-white transition-colors shadow-lg"
                     >
                       + Quick Add
                     </button>
                   </div>
                 </div>
-                
+
                 {/* TEKS DETAIL PRODUK */}
                 <div className="p-4 flex-1 flex flex-col bg-white">
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">
                       Herclo Official
                     </span>
-                    <span className={`text-[9px] font-bold ${
-                      (product.stock_quantity ?? 0) > 0 ? 'text-emerald-600' : 'text-red-500 font-black'
-                    }`}>
+                    <span className={`text-[9px] font-bold ${(product.stock_quantity ?? 0) > 0 ? 'text-emerald-600' : 'text-red-500 font-black'
+                      }`}>
                       {(product.stock_quantity ?? 0) > 0 ? `Stok: ${product.stock_quantity}` : 'Stok Habis'}
                     </span>
                   </div>
-                  
+
                   <h3 className="text-sm md:text-base font-black text-black line-clamp-2 leading-tight group-hover:text-lime-600 transition-colors">
                     {product.name}
                   </h3>
-                  
+
                   <div className="mt-auto pt-3 flex flex-col gap-2 border-t border-gray-50">
                     <p className="font-black text-black text-sm md:text-base">
                       Rp {new Intl.NumberFormat('id-ID').format(Number(product.price))}
                     </p>
-                    
+
                     {/* Tombol Beli Mobile */}
-                    <button 
-                      onClick={() => openModal(product)} 
+                    <button
+                      onClick={() => openModal(product)}
                       disabled={(product.stock_quantity ?? 0) <= 0}
-                      className={`md:hidden w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${
-                        (product.stock_quantity ?? 0) > 0
+                      className={`md:hidden w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors ${(product.stock_quantity ?? 0) > 0
                           ? 'bg-black text-lime-400 active:bg-lime-400 active:text-black'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       {(product.stock_quantity ?? 0) > 0 ? 'Beli Sekarang' : 'Habis'}
                     </button>
@@ -358,10 +409,10 @@ export default function Home() {
         </motion.section>
 
         {/* --- CARD ABU-ABU PROMO / SPECIAL HIGHLIGHT --- */}
-        <motion.section 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true, margin: "-50px" }} 
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
           variants={fadeUp}
           className="w-full bg-gradient-to-r from-gray-950 via-black to-gray-900 border border-white/10 rounded-2xl md:rounded-3xl p-8 md:p-14 text-white shadow-2xl relative overflow-hidden"
         >
@@ -384,8 +435,8 @@ export default function Home() {
             </div>
 
             <div className="shrink-0 pt-2 md:pt-0">
-              <Link 
-                href="/collection" 
+              <Link
+                href="/collection"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-lime-400 text-black hover:bg-white font-black text-xs uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_20px_rgba(163,230,53,0.4)] hover:scale-105 group"
               >
                 <span>Lihat Promo</span>
@@ -396,24 +447,24 @@ export default function Home() {
         </motion.section>
 
         {/* --- SUB BANNER GAMBAR EKSKLUSIF (1280 x 420 px) --- */}
-        <motion.section 
-          initial="hidden" 
-          whileInView="visible" 
-          viewport={{ once: true, margin: "-50px" }} 
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
           variants={fadeUp}
           className="w-full max-w-[1280px] h-64 sm:h-80 md:h-[420px] mx-auto relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl group border border-white/10 bg-black"
         >
           {subBanners.length > 0 ? (
-            <img 
-              src={getAssetUrl(subBanners[0].image_path)} 
-              alt={subBanners[0].title || "HERCLO Sub Banner"} 
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+            <img
+              src={getAssetUrl(subBanners[0].image_path)}
+              alt={subBanners[0].title || "HERCLO Sub Banner"}
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
             />
           ) : (
-            <img 
-              src="/herclo_middle_banner.jpg" 
-              alt="HERCLO Streetwear Banner" 
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+            <img
+              src="/herclo_middle_banner.jpg"
+              alt="HERCLO Streetwear Banner"
+              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
             />
           )}
 
@@ -423,8 +474,8 @@ export default function Home() {
               {subBanners.length > 0 && subBanners[0].title ? subBanners[0].title : "Urban Streetwear Collection"}
             </h2>
             <div>
-              <Link 
-                href={subBanners.length > 0 && subBanners[0].link_url ? subBanners[0].link_url : "/collection"} 
+              <Link
+                href={subBanners.length > 0 && subBanners[0].link_url ? subBanners[0].link_url : "/collection"}
                 className="inline-flex items-center gap-3 px-8 py-3.5 bg-lime-400 text-black text-xs font-black uppercase tracking-widest rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:scale-105"
               >
                 <span>Jelajahi Sekarang</span>
@@ -456,11 +507,11 @@ export default function Home() {
         )}
         {/* --- SECTION ARTIKEL / JOURNAL (3 GRID CARD) --- */}
         {articles.length > 0 && (
-          <motion.section 
-            initial="hidden" 
-            whileInView="visible" 
-            viewport={{ once: true }} 
-            variants={fadeUp} 
+          <motion.section
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
             className="pt-4"
           >
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 border-b border-gray-200 pb-4">
@@ -472,8 +523,8 @@ export default function Home() {
                   Artikel & Tips Style<span className="text-lime-500">.</span>
                 </h2>
               </div>
-              <Link 
-                href="/articles" 
+              <Link
+                href="/articles"
                 className="text-xs md:text-sm font-black text-gray-500 hover:text-black transition-colors uppercase tracking-widest mt-2 md:mt-0"
               >
                 Lihat Semua Artikel ↗
@@ -482,15 +533,15 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {articles.slice(0, 3).map((article) => (
-                <div 
-                  key={article.id} 
+                <div
+                  key={article.id}
                   className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col group"
                 >
                   <div className="relative h-48 bg-gray-100 overflow-hidden">
                     {article.image_path ? (
-                      <img 
-                        src={getAssetUrl(article.image_path)} 
-                        alt={article.title} 
+                      <img
+                        src={getAssetUrl(article.image_path)}
+                        alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -513,8 +564,8 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <Link 
-                      href={`/articles/${article.slug}`} 
+                    <Link
+                      href={`/articles/${article.slug}`}
                       className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-widest text-black hover:text-lime-600 transition-colors"
                     >
                       <span>Baca Selengkapnya</span>
@@ -533,7 +584,7 @@ export default function Home() {
       <footer className="bg-black text-white pt-16 pb-12 border-t-2 border-lime-400 mt-20 relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-14">
-            
+
             {/* Kolom 1: Brand Info & Sosmed */}
             <div className="space-y-4">
               <Link href="/">
@@ -580,16 +631,16 @@ export default function Home() {
               </h4>
               <ul className="space-y-3 text-xs text-zinc-400 font-normal">
                 <li className="flex items-start gap-2.5">
-                  <svg className="w-4 h-4 text-lime-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  <span>Cakung, Jakarta Timur, Indonesia</span>
+                  <svg className="w-4 h-4 text-lime-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <span>Jl. Irigasi No.138, RT.9/RW.2, Ujung Menteng, Kec. Cakung, Kota Jakarta Timur, Daerah Khusus Ibukota Jakarta 13960</span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                  <a href="mailto:hello@herclo.com" className="hover:text-lime-400 transition-colors">hello@herclo.com</a>
+                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                  <a href="mailto:hello@herclo.com" className="hover:text-lime-400 transition-colors">Hercloindonesia@gmail.com</a>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                  <span>+62 812-3456-7890</span>
+                  <svg className="w-4 h-4 text-lime-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                  <span>085186071455</span>
                 </li>
               </ul>
             </div>
@@ -618,22 +669,22 @@ export default function Home() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-100 flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
             <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} className="bg-white w-full max-w-md p-8 relative rounded-3xl shadow-2xl border border-gray-100">
               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 text-black hover:text-lime-500 font-black text-2xl">&times;</button>
-              
+
               <div className="flex gap-6 mb-8 border-b border-gray-100 pb-6">
                 <div className="w-24 h-24 bg-gray-100 rounded-2xl overflow-hidden shrink-0">
-                   {selectedProduct.image_path ? (
-                      <img src={getAssetUrl(selectedProduct.image_path)} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                   ) : (<span className="text-[10px] text-gray-400 flex items-center justify-center h-full">No Image</span>)}
+                  {selectedProduct.image_path ? (
+                    <img src={getAssetUrl(selectedProduct.image_path)} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                  ) : (<span className="text-[10px] text-gray-400 flex items-center justify-center h-full">No Image</span>)}
                 </div>
                 <div>
                   <h3 className="font-black text-xl mb-1 text-black leading-tight line-clamp-2">{selectedProduct.name}</h3>
                   <p className="text-lg font-bold text-gray-900">Rp {new Intl.NumberFormat('id-ID').format(Number(selectedProduct.price))}</p>
-                  <p className={`text-xs font-bold mt-1 ${ (selectedProduct.stock_quantity ?? 0) > 0 ? 'text-emerald-600' : 'text-red-500 font-black' }`}>
+                  <p className={`text-xs font-bold mt-1 ${(selectedProduct.stock_quantity ?? 0) > 0 ? 'text-emerald-600' : 'text-red-500 font-black'}`}>
                     {(selectedProduct.stock_quantity ?? 0) > 0 ? `Stok Tersedia: ${selectedProduct.stock_quantity} pcs` : 'Stok Habis'}
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-6">
                 {selectedProduct.description && (
                   <div>
@@ -647,7 +698,7 @@ export default function Home() {
                   <label className="block text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Ukuran</label>
                   <div className="flex gap-3">
                     {['S', 'M', 'L', 'XL'].map(s => (
-                      <button key={s} onClick={() => setVariant({...variant, size: s})} className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${variant.size === s ? 'bg-black text-lime-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{s}</button>
+                      <button key={s} onClick={() => setVariant({ ...variant, size: s })} className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${variant.size === s ? 'bg-black text-lime-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{s}</button>
                     ))}
                   </div>
                 </div>
@@ -660,17 +711,16 @@ export default function Home() {
                         if (!trimmedColor) return null;
                         const isSelected = variant.color === trimmedColor;
                         return (
-                          <button 
-                            key={trimmedColor} 
+                          <button
+                            key={trimmedColor}
                             type="button"
-                            onClick={() => setVariant({ ...variant, color: trimmedColor })} 
-                            className={`px-4 h-11 rounded-xl flex items-center gap-2 font-bold text-sm transition-all border ${
-                              isSelected 
-                                ? 'bg-black text-lime-400 border-black shadow-sm' 
+                            onClick={() => setVariant({ ...variant, color: trimmedColor })}
+                            className={`px-4 h-11 rounded-xl flex items-center gap-2 font-bold text-sm transition-all border ${isSelected
+                                ? 'bg-black text-lime-400 border-black shadow-sm'
                                 : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
-                            }`}
+                              }`}
                           >
-                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: trimmedColor.toLowerCase() }}></span>
+                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: getColorHex(trimmedColor) }}></span>
                             {trimmedColor}
                           </button>
                         );
@@ -686,16 +736,16 @@ export default function Home() {
                 <div className="flex justify-between items-center py-3 border-t border-gray-100 mt-4">
                   <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Jumlah</span>
                   <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
-                    <button 
-                      onClick={() => setVariant({...variant, qty: Math.max(1, variant.qty - 1)})} 
+                    <button
+                      onClick={() => setVariant({ ...variant, qty: Math.max(1, variant.qty - 1) })}
                       disabled={(selectedProduct.stock_quantity ?? 0) <= 0}
                       className="w-10 h-10 flex items-center justify-center font-black hover:bg-gray-200"
                     >
                       -
                     </button>
                     <span className="w-10 text-center font-bold text-sm">{variant.qty}</span>
-                    <button 
-                      onClick={() => setVariant({...variant, qty: Math.min(selectedProduct.stock_quantity ?? 1, variant.qty + 1)})} 
+                    <button
+                      onClick={() => setVariant({ ...variant, qty: Math.min(selectedProduct.stock_quantity ?? 1, variant.qty + 1) })}
                       disabled={(selectedProduct.stock_quantity ?? 0) <= 0 || variant.qty >= (selectedProduct.stock_quantity ?? 1)}
                       className="w-10 h-10 flex items-center justify-center font-black hover:bg-gray-200 disabled:opacity-30"
                     >
@@ -706,25 +756,23 @@ export default function Home() {
               </div>
 
               <div className="flex gap-4 mt-8">
-                <button 
-                  onClick={() => handleBuy(false)} 
+                <button
+                  onClick={() => handleBuy(false)}
                   disabled={(selectedProduct.stock_quantity ?? 0) <= 0}
-                  className={`flex-1 py-4 font-black uppercase text-xs tracking-widest rounded-xl transition-colors ${
-                    (selectedProduct.stock_quantity ?? 0) > 0 
-                      ? 'bg-gray-100 text-black hover:bg-gray-200' 
+                  className={`flex-1 py-4 font-black uppercase text-xs tracking-widest rounded-xl transition-colors ${(selectedProduct.stock_quantity ?? 0) > 0
+                      ? 'bg-gray-100 text-black hover:bg-gray-200'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   + Keranjang
                 </button>
-                <button 
-                  onClick={() => handleBuy(true)} 
+                <button
+                  onClick={() => handleBuy(true)}
                   disabled={(selectedProduct.stock_quantity ?? 0) <= 0}
-                  className={`flex-1 py-4 font-black uppercase text-xs tracking-widest rounded-xl transition-colors ${
-                    (selectedProduct.stock_quantity ?? 0) > 0 
-                      ? 'bg-lime-400 text-black hover:bg-lime-500 shadow-[0_0_15px_rgba(163,230,53,0.5)]' 
+                  className={`flex-1 py-4 font-black uppercase text-xs tracking-widest rounded-xl transition-colors ${(selectedProduct.stock_quantity ?? 0) > 0
+                      ? 'bg-lime-400 text-black hover:bg-lime-500 shadow-[0_0_15px_rgba(163,230,53,0.5)]'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   {(selectedProduct.stock_quantity ?? 0) > 0 ? 'Checkout' : 'Stok Habis'}
                 </button>

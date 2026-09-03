@@ -11,6 +11,46 @@ import PublicHeader from '../components/PublicHeader';
 interface Category { id: number; name: string; }
 interface Product { id: number; name: string; price: number; stock_quantity?: number; description?: string; image_path?: string; color?: string; category?: { name: string; }; }
 
+export const getColorHex = (colorName: string): string => {
+  const map: { [key: string]: string } = {
+    'hitam': '#1a1a1a',
+    'black': '#1a1a1a',
+    'jet black': '#0a0a0a',
+    'putih': '#ffffff',
+    'white': '#ffffff',
+    'abu-abu': '#9ca3af',
+    'abu': '#9ca3af',
+    'grey': '#9ca3af',
+    'gray': '#9ca3af',
+    'navy': '#1e3a8a',
+    'navy blue': '#1e3a8a',
+    'sage green': '#84a98c',
+    'sage': '#84a98c',
+    'maroon': '#800000',
+    'cream': '#fef3c7',
+    'krem': '#fef3c7',
+    'cokelat': '#78350f',
+    'brown': '#78350f',
+    'army': '#4d5d53',
+    'hijau army': '#4d5d53',
+    'lilac': '#c084fc',
+    'beige': '#e6d5b8',
+    'merah': '#ef4444',
+    'red': '#ef4444',
+    'biru': '#3b82f6',
+    'blue': '#3b82f6',
+    'hijau': '#22c55e',
+    'green': '#22c55e',
+    'kuning': '#eab308',
+    'yellow': '#eab308',
+    'pink': '#ec4899',
+    'merah muda': '#ec4899',
+    'standard': '#4b5563'
+  };
+  const lower = (colorName || '').trim().toLowerCase();
+  return map[lower] || lower;
+};
+
 function CollectionContent() {
   const searchParams = useSearchParams();
   const searchKeyword = searchParams.get('search') || '';
@@ -25,12 +65,29 @@ function CollectionContent() {
 
   const openModal = (product: Product) => {
     setSelectedProduct(product);
-    setVariant({ size: 'M', color: product.color || 'Hitam', qty: 1 });
+    const initialColor = product.color ? product.color.split(',')[0].trim() : 'Hitam';
+    setVariant({ size: 'M', color: initialColor || 'Hitam', qty: 1 });
   };
 
   const handleBuy = (isDirectBuy: boolean) => {
     if (!selectedProduct) return;
     try {
+      if (isDirectBuy) {
+        // Direct buy: checkout produk yang baru saja dipilih
+        const directCart = [{
+          id: Date.now() + Math.random(),
+          product: selectedProduct,
+          quantity: variant.qty,
+          size: variant.size,
+          color: variant.color
+        }];
+        localStorage.setItem('herclo_cart', JSON.stringify(directCart));
+        setSelectedProduct(null);
+        router.push('/checkout');
+        return;
+      }
+
+      // Jika + Keranjang: tambahkan ke keranjang belanja
       const existingCart = JSON.parse(localStorage.getItem('herclo_cart') || '[]');
       
       const existingItemIndex = existingCart.findIndex((item: any) => 
@@ -53,11 +110,7 @@ function CollectionContent() {
 
       localStorage.setItem('herclo_cart', JSON.stringify(existingCart));
       setSelectedProduct(null);
-      if (isDirectBuy) {
-        router.push('/checkout');
-      } else {
-        alert('Berhasil dimasukkan ke keranjang!');
-      }
+      alert('Berhasil dimasukkan ke keranjang!');
     } catch (error) {
       alert('Gagal menyimpan keranjang ke browser.');
     }
@@ -179,7 +232,7 @@ function CollectionContent() {
                                 : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
                             }`}
                           >
-                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: trimmedColor.toLowerCase() }}></span>
+                            <span className="w-3 h-3 rounded-full border border-gray-300 shrink-0" style={{ backgroundColor: getColorHex(trimmedColor) }}></span>
                             {trimmedColor}
                           </button>
                         );
@@ -415,10 +468,18 @@ function CollectionContent() {
                       </h3>
 
                       {product.color && (
-                        <p className="text-[10px] md:text-xs text-gray-500 font-bold mt-1 flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block shrink-0 shadow-xs" style={{ backgroundColor: product.color.toLowerCase() }}></span>
-                          <span className="truncate">{product.color}</span>
-                        </p>
+                        <div className="mt-1 flex items-center gap-1 flex-wrap">
+                          {product.color.split(',').map((c: string, idx: number) => {
+                            const trimmed = c.trim();
+                            if (!trimmed) return null;
+                            return (
+                              <span key={idx} className="inline-flex items-center gap-1 text-[10px] md:text-xs text-gray-500 font-bold bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                                <span className="w-2 h-2 rounded-full border border-gray-300 inline-block shrink-0 shadow-2xs" style={{ backgroundColor: getColorHex(trimmed) }}></span>
+                                <span className="truncate max-w-[80px]">{trimmed}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
                       )}
                       
                       <div className="mt-auto pt-2 flex flex-col gap-2">

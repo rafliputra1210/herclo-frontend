@@ -25,6 +25,60 @@ interface Product {
   items?: any[];
 }
 
+export const getColorHex = (colorName: string): string => {
+  const map: { [key: string]: string } = {
+    'hitam': '#1a1a1a',
+    'black': '#1a1a1a',
+    'jet black': '#0a0a0a',
+    'putih': '#ffffff',
+    'white': '#ffffff',
+    'abu-abu': '#9ca3af',
+    'abu': '#9ca3af',
+    'grey': '#9ca3af',
+    'gray': '#9ca3af',
+    'navy': '#1e3a8a',
+    'navy blue': '#1e3a8a',
+    'sage green': '#84a98c',
+    'sage': '#84a98c',
+    'maroon': '#800000',
+    'cream': '#fef3c7',
+    'krem': '#fef3c7',
+    'cokelat': '#78350f',
+    'brown': '#78350f',
+    'army': '#4d5d53',
+    'hijau army': '#4d5d53',
+    'lilac': '#c084fc',
+    'beige': '#e6d5b8',
+    'merah': '#ef4444',
+    'red': '#ef4444',
+    'biru': '#3b82f6',
+    'blue': '#3b82f6',
+    'hijau': '#22c55e',
+    'green': '#22c55e',
+    'kuning': '#eab308',
+    'yellow': '#eab308',
+    'pink': '#ec4899',
+    'merah muda': '#ec4899',
+    'standard': '#4b5563'
+  };
+  const lower = (colorName || '').trim().toLowerCase();
+  return map[lower] || lower;
+};
+
+const COLOR_PRESETS = [
+  { name: 'Hitam', hex: '#1a1a1a' },
+  { name: 'Putih', hex: '#ffffff' },
+  { name: 'Abu-abu', hex: '#9ca3af' },
+  { name: 'Navy', hex: '#1e3a8a' },
+  { name: 'Sage Green', hex: '#84a98c' },
+  { name: 'Maroon', hex: '#800000' },
+  { name: 'Cream', hex: '#fef3c7' },
+  { name: 'Cokelat', hex: '#78350f' },
+  { name: 'Army', hex: '#4d5d53' },
+  { name: 'Lilac', hex: '#c084fc' },
+  { name: 'Beige', hex: '#e6d5b8' },
+];
+
 export default function ProductManagement() {
   const { confirm } = useConfirm();
   const [products, setProducts] = useState<Product[]>([]);
@@ -42,7 +96,8 @@ export default function ProductManagement() {
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('20');
   const [size, setSize] = useState('M, L');
-  const [color, setColor] = useState('Jet Black');
+  const [color, setColor] = useState('Hitam');
+  const [customColor, setCustomColor] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -58,6 +113,43 @@ export default function ProductManagement() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helper Multi-Color
+  const selectedColors = color
+    ? color.split(',').map(c => c.trim()).filter(Boolean)
+    : [];
+
+  const handleTogglePreset = (presetName: string) => {
+    const exists = selectedColors.some(c => c.toLowerCase() === presetName.toLowerCase());
+    if (exists) {
+      const updated = selectedColors.filter(c => c.toLowerCase() !== presetName.toLowerCase());
+      setColor(updated.join(', '));
+    } else {
+      const updated = [...selectedColors, presetName];
+      setColor(updated.join(', '));
+    }
+  };
+
+  const handleAddCustomColor = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = customColor.trim();
+    if (!trimmed) return;
+    
+    const parts = trimmed.split(',').map(p => p.trim()).filter(Boolean);
+    let updated = [...selectedColors];
+    for (const part of parts) {
+      if (!updated.some(c => c.toLowerCase() === part.toLowerCase())) {
+        updated.push(part);
+      }
+    }
+    setColor(updated.join(', '));
+    setCustomColor('');
+  };
+
+  const handleRemoveColor = (colToRemove: string) => {
+    const updated = selectedColors.filter(c => c.toLowerCase() !== colToRemove.toLowerCase());
+    setColor(updated.join(', '));
+  };
 
   const handleSizeStockChange = (sz: string, val: number) => {
     const updated = { ...sizeStocks, [sz]: Math.max(0, val) };
@@ -106,7 +198,8 @@ export default function ProductManagement() {
 
   const handleAddClick = () => {
     setEditingId(null);
-    setName(''); setCategoryId(''); setPrice(''); setStock('20'); setSize('M, L'); setColor('Jet Black');
+    setName(''); setCategoryId(''); setPrice(''); setStock('20'); setSize('M, L'); setColor('Hitam');
+    setCustomColor('');
     setSizeStocks({ S: 0, M: 10, L: 10, XL: 0, 'ALL SIZE': 0 });
     setDescription(''); setImage(null); setImagePreview(null); setExistingImagePath(null);
     setIsFormOpen(!isFormOpen);
@@ -119,7 +212,8 @@ export default function ProductManagement() {
     setPrice(String(product.price));
     setStock(String(product.stock_quantity));
     setSize(product.size || 'ALL SIZE');
-    setColor(product.color || 'Jet Black');
+    setColor(product.color || 'Hitam');
+    setCustomColor('');
     setDescription(product.description || '');
     setImage(null);
     setImagePreview(null);
@@ -268,30 +362,96 @@ export default function ProductManagement() {
                     </div>
                   </div>
 
-                  {/* Input Warna dengan Preset Cepat */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Warna Produk</label>
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  {/* --- ATUR PILIHAN WARNA PRODUK (MULTI-WARNA) --- */}
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+                        Pilihan Warna Produk ({selectedColors.length} Dipilih)
+                      </label>
+                      <span className="text-[11px] text-gray-500 font-medium">Klik preset untuk pilih/hapus, atau tambah warna custom</span>
+                    </div>
+
+                    {/* Chip Tag Warna yang Sedang Dipilih */}
+                    <div className="min-h-[46px] bg-white border border-gray-300 p-2.5 rounded-xl flex flex-wrap items-center gap-1.5 shadow-2xs">
+                      {selectedColors.length === 0 ? (
+                        <span className="text-xs text-gray-400 italic px-1">Belum ada warna dipilih. Klik tombol warna di bawah atau ketik manual.</span>
+                      ) : (
+                        selectedColors.map((c) => (
+                          <span 
+                            key={c}
+                            className="inline-flex items-center gap-1.5 bg-black text-white text-xs font-bold pl-2.5 pr-2 py-1 rounded-full shadow-xs border border-gray-800"
+                          >
+                            <span 
+                              className="w-2.5 h-2.5 rounded-full border border-white/40 shrink-0" 
+                              style={{ backgroundColor: getColorHex(c) }}
+                            />
+                            <span>{c}</span>
+                            <button 
+                              type="button"
+                              onClick={() => handleRemoveColor(c)}
+                              className="w-4 h-4 rounded-full bg-white/20 hover:bg-red-500 hover:text-white flex items-center justify-center text-[10px] text-gray-300 transition-colors cursor-pointer"
+                              title="Hapus warna"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Pilihan Preset Warna Cepat (Multi-Select) */}
+                    <div>
+                      <span className="block text-[11px] font-bold text-gray-600 mb-1.5 uppercase tracking-wider">
+                        Pilihan Warna Populer (Bisa Pilih Lebih Dari 1):
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {COLOR_PRESETS.map(preset => {
+                          const isSelected = selectedColors.some(c => c.toLowerCase() === preset.name.toLowerCase());
+                          return (
+                            <button
+                              key={preset.name}
+                              type="button"
+                              onClick={() => handleTogglePreset(preset.name)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border cursor-pointer ${
+                                isSelected 
+                                  ? 'bg-black text-lime-400 border-black shadow-xs ring-2 ring-lime-400/60' 
+                                  : 'bg-white text-gray-700 border-gray-300 hover:border-black hover:bg-gray-50'
+                              }`}
+                            >
+                              <span 
+                                className="w-3 h-3 rounded-full border border-gray-400/50 shrink-0" 
+                                style={{ backgroundColor: preset.hex }}
+                              />
+                              <span>{preset.name}</span>
+                              {isSelected && <span className="text-lime-400 text-xs font-black">✓</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Input Tambah Warna Kustom */}
+                    <div className="flex gap-2">
                       <input 
                         type="text" 
-                        required
-                        value={color} 
-                        onChange={(e) => setColor(e.target.value)}
+                        value={customColor}
+                        onChange={(e) => setCustomColor(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddCustomColor();
+                          }
+                        }}
                         className="flex-1 bg-white border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-black text-sm"
-                        placeholder="Contoh: Jet Black, Sage Green, Oversized White..."
+                        placeholder="Ketik warna lain (misal: Broken White, Charcoal, Mint) lalu tekan Enter / tombol Tambah..."
                       />
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {['Hitam', 'Abu-abu', 'Putih', 'Navy'].map(preset => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => setColor(preset)}
-                            className="px-2.5 py-1.5 bg-gray-200 hover:bg-black hover:text-white rounded text-[11px] font-bold transition-all"
-                          >
-                            {preset}
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddCustomColor}
+                        className="px-4 py-2.5 bg-black text-lime-400 rounded-lg text-xs font-black uppercase tracking-wider hover:bg-gray-800 transition-colors shrink-0 shadow-xs"
+                      >
+                        + Tambah
+                      </button>
                     </div>
                   </div>
 
@@ -425,7 +585,30 @@ export default function ProductManagement() {
                         </div>
                     </td>
                     <td className="p-4 text-gray-600 text-sm">{product.category?.name || '-'}</td>
-                    <td className="p-4 text-gray-700 text-sm font-semibold">{product.color || '-'}</td>
+                    <td className="p-4 text-gray-700 text-sm">
+                      {product.color ? (
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                          {product.color.split(',').map((c: string, idx: number) => {
+                            const trimmed = c.trim();
+                            if (!trimmed) return null;
+                            return (
+                              <span 
+                                key={idx} 
+                                className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-[11px] font-semibold px-2 py-0.5 rounded border border-gray-200"
+                              >
+                                <span 
+                                  className="w-2 h-2 rounded-full border border-gray-300 shrink-0" 
+                                  style={{ backgroundColor: getColorHex(trimmed) }}
+                                />
+                                <span>{trimmed}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
+                    </td>
                     <td className="p-4 text-gray-900 font-medium">Rp {new Intl.NumberFormat('id-ID').format(Number(product.price))}</td>
                     <td className="p-4 text-gray-700 text-sm font-bold">{product.stock_quantity} pcs</td>
                     <td className="p-4 text-right space-x-3">
